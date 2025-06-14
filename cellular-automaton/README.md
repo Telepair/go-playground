@@ -10,6 +10,12 @@ A Terminal User Interface (TUI) implementation of 1D cellular automata with high
 - **Dual Operating Modes**:
   - Finite mode: Run for a specific number of steps
   - Infinite mode: Continuous generation with real-time visualization
+- **Enhanced User Interface**:
+  - 🧬 Modern header with icons and styled branding
+  - ⚡ Status bar with organized information groups and visual indicators
+  - 🎮 Categorized control panel with grouped commands
+  - 📐 Card-like layout with rounded borders and enhanced styling
+  - 🔄 Real-time status indicators (Running/Paused with visual feedback)
 - **Auto Window Detection**: Automatically detects terminal size or allows manual specification
 - **Highly Customizable Rendering**:
   - Configurable cell size (1-3x)
@@ -17,7 +23,7 @@ A Terminal User Interface (TUI) implementation of 1D cellular automata with high
   - Custom characters for rendering
 - **Dynamic Refresh**: Configurable refresh rate (default 1s, minimum 1ms)
 - **Flexible Window Size**: Auto-detection or manual specification using WIDTHxHEIGHT format (e.g., 100x80)
-- **Bilingual Support**: English and Chinese interface
+- **Bilingual Support**: English and Chinese interface with improved formatting
 
 ## Installation
 

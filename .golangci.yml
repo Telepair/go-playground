@@ -1,0 +1,27 @@
+version: "2"
+run:
+  go: "1.24"
+  concurrency: 4
+  timeout: 10m
+
+linters:
+  enable:
+    - errcheck
+    - ineffassign
+    - staticcheck
+    - unused
+    - gocyclo
+    - gosec
+    - misspell
+    - whitespace
+    - revive
+  exclusions:
+    rules:
+      - path: tests
+        linters:
+          - revive
+      - path: _test\.go
+        linters:
+          - revive
+          - errcheck
+          - gosec

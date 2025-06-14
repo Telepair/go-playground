@@ -1,112 +1,122 @@
 package main
 
-type Window struct {
-	rows uint
-	cols uint
-}
+var (
+	defaultRule     = 30
+	defaultMaxSteps = 0
+	defaultCols     = 1
+)
 
 // CellularAutomaton represents a 1D cellular automaton
 type CellularAutomaton struct {
-	grid       [][]bool
-	rule       uint
-	currentRow uint
-	generation uint // Track actual generation number for infinite mode
-	maxSteps   uint // if 0, infinite mode
-	window     Window
+	currentRow []bool
+	nextRow    []bool
+	rule       int
+	generation int // Track actual generation number for infinite mode
+	maxSteps   int // if 0, infinite mode
+	cols       int
 	boundary   BoundaryType // Boundary condition type
+	ruleTable  [8]bool      // Pre-computed rule table for better performance
 }
 
 // NewCellularAutomaton creates a new cellular automaton instance
-func NewCellularAutomaton(rule, maxSteps uint, window *Window, boundary BoundaryType) *CellularAutomaton {
-	if window == nil {
-		window = &Window{
-			rows: DefaultWindowRows,
-			cols: DefaultWindowCols,
-		}
+func NewCellularAutomaton(rule, maxSteps, cols int, boundary BoundaryType) *CellularAutomaton {
+	if cols <= 0 {
+		cols = defaultCols
 	}
-
+	if rule < 0 || rule > 255 {
+		rule = defaultRule
+	}
+	if maxSteps < 0 {
+		maxSteps = defaultMaxSteps
+	}
 	ca := &CellularAutomaton{
 		rule:       rule,
-		grid:       make([][]bool, window.rows),
-		maxSteps:   maxSteps,
-		currentRow: 0,
 		generation: 0,
-		window:     *window,
+		maxSteps:   maxSteps,
 		boundary:   boundary,
+		cols:       cols,
+		currentRow: make([]bool, cols),
+		nextRow:    make([]bool, cols),
 	}
 
-	// Initialize grid
-	for i := range ca.grid {
-		ca.grid[i] = make([]bool, window.cols)
-	}
+	// Pre-compute rule table for better performance
+	ca.computeRuleTable()
 
-	// Set initial state - single cell in the middle
-	ca.grid[0][window.cols/2] = true
-
+	// Set initial seed in the current row so it displays immediately
+	ca.currentRow[cols/2] = true
 	return ca
 }
 
-// getRuleBit returns the bit value for a given pattern according to the rule
-func (ca *CellularAutomaton) getRuleBit(left, center, right bool) bool {
-	// Convert boolean pattern to integer (000 to 111)
-	pattern := 0
-	if left {
-		pattern += 4
+// computeRuleTable pre-computes the rule lookup table for better performance
+func (ca *CellularAutomaton) computeRuleTable() {
+	for i := range 8 {
+		ca.ruleTable[i] = (ca.rule & (1 << i)) != 0
 	}
-	if center {
-		pattern += 2
-	}
-	if right {
-		pattern += 1
-	}
-
-	// Check if the corresponding bit in the rule is set
-	return (ca.rule & (1 << pattern)) != 0
 }
 
-// getNeighbors returns the left, center, and right neighbors for a given position
-// applying the specified boundary conditions
-func (ca *CellularAutomaton) getNeighbors(i uint) (bool, bool, bool) {
-	center := ca.grid[ca.currentRow][i]
-
-	var left, right bool
-
+// getNeighbors returns the left and right neighbors for a given cell index
+// This function handles all boundary conditions in one place for clarity
+func (ca *CellularAutomaton) getNeighbors(idx int) (left, right bool) {
 	switch ca.boundary {
 	case BoundaryPeriodic:
 		// Periodic boundary: wrap around
-		left = ca.grid[ca.currentRow][(i-1+ca.window.cols)%ca.window.cols]
-		right = ca.grid[ca.currentRow][(i+1)%ca.window.cols]
+		leftIdx := (idx - 1 + ca.cols) % ca.cols
+		rightIdx := (idx + 1) % ca.cols
+		left = ca.currentRow[leftIdx]
+		right = ca.currentRow[rightIdx]
 
 	case BoundaryFixed:
 		// Fixed boundary: use false (0) for boundary cells
-		if i == 0 {
-			left = false
-		} else {
-			left = ca.grid[ca.currentRow][i-1]
+		if idx > 0 {
+			left = ca.currentRow[idx-1]
 		}
-
-		if i == ca.window.cols-1 {
-			right = false
-		} else {
-			right = ca.grid[ca.currentRow][i+1]
+		if idx < ca.cols-1 {
+			right = ca.currentRow[idx+1]
 		}
 
 	case BoundaryReflect:
 		// Reflective boundary: boundary cells reflect themselves
-		if i == 0 {
-			left = center
+		if idx == 0 {
+			left = ca.currentRow[idx] // Reflect itself
 		} else {
-			left = ca.grid[ca.currentRow][i-1]
+			left = ca.currentRow[idx-1]
 		}
 
-		if i == ca.window.cols-1 {
-			right = center
+		if idx == ca.cols-1 {
+			right = ca.currentRow[idx] // Reflect itself
 		} else {
-			right = ca.grid[ca.currentRow][i+1]
+			right = ca.currentRow[idx+1]
 		}
 	}
 
-	return left, center, right
+	return left, right
+}
+
+// getRuleBit returns the next state for a cell based on its neighborhood
+func (ca *CellularAutomaton) getRuleBit(idx int) bool {
+	// Input validation
+	if idx < 0 || idx >= ca.cols {
+		return false
+	}
+
+	// Get neighbors using the optimized neighbor function
+	left, right := ca.getNeighbors(idx)
+	center := ca.currentRow[idx]
+
+	// Convert boolean triplet to integer pattern (000 to 111)
+	pattern := 0
+	if left {
+		pattern += 4 // Left bit (most significant)
+	}
+	if center {
+		pattern += 2 // Center bit
+	}
+	if right {
+		pattern++ // Right bit (least significant)
+	}
+
+	// Use pre-computed rule table for better performance
+	return ca.ruleTable[pattern]
 }
 
 // Step advances the cellular automaton by one generation
@@ -114,40 +124,50 @@ func (ca *CellularAutomaton) Step() bool {
 	if ca.maxSteps > 0 && ca.generation >= ca.maxSteps {
 		return false
 	}
-	ca.generation++ // Always increment the actual generation counter
-	nextRow := (ca.currentRow + 1) % ca.window.rows
 
-	// Compute next generation
-	for i := uint(0); i < ca.window.cols; i++ {
-		// Get neighbors using boundary conditions
-		left, center, right := ca.getNeighbors(i)
-
-		// Apply rule
-		ca.grid[nextRow][i] = ca.getRuleBit(left, center, right)
+	// Calculate next generation based on current row
+	for i := range ca.cols {
+		ca.nextRow[i] = ca.getRuleBit(i)
 	}
-	ca.currentRow = nextRow
-	return true // Always return true for infinite mode
+
+	// Swap current and next rows for next iteration (more efficient than copying)
+	ca.currentRow, ca.nextRow = ca.nextRow, ca.currentRow
+
+	ca.generation++ // Increment generation counter after computing
+	return true
+}
+
+// GetCurrentRow returns the current row of the cellular automaton
+func (ca *CellularAutomaton) GetCurrentRow() []bool {
+	return ca.currentRow
 }
 
 // GetGeneration returns the current generation number
-func (ca *CellularAutomaton) GetGeneration() uint {
+func (ca *CellularAutomaton) GetGeneration() int {
 	return ca.generation
 }
 
-// GetGrid returns the current grid state in chronological order
-// Note: The returned slice shares the underlying data with the internal grid
-// Callers should not modify the returned data
-func (ca *CellularAutomaton) GetGrid() [][]bool {
-	// Calculate the starting row for chronological order (oldest first)
-	startRow := (ca.currentRow + 1) % ca.window.rows
-
-	// Pre-allocate result slice with known capacity
-	result := make([][]bool, 0, ca.window.rows)
-
-	// Return grid in chronological order
-	for i := uint(0); i < ca.window.rows; i++ {
-		rowIndex := (startRow + i) % ca.window.rows
-		result = append(result, ca.grid[rowIndex])
+// Reset resets the cellular automaton to its initial state
+// This is more efficient than creating new slices
+func (ca *CellularAutomaton) Reset() {
+	// Clear both rows efficiently
+	for i := range ca.currentRow {
+		ca.currentRow[i] = false
+		ca.nextRow[i] = false
 	}
-	return result
+
+	// Set initial seed in current row
+	ca.currentRow[ca.cols/2] = true
+	ca.generation = 0
+}
+
+// SetRule updates the rule and recomputes the rule table
+func (ca *CellularAutomaton) SetRule(rule int) {
+	ca.rule = rule
+	ca.computeRuleTable()
+}
+
+// IsFinished returns true if the cellular automaton has reached its maximum steps
+func (ca *CellularAutomaton) IsFinished() bool {
+	return ca.maxSteps > 0 && ca.generation >= ca.maxSteps
 }
