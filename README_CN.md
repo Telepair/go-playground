@@ -10,7 +10,13 @@ _[English Version / 英文版本](README.md)_
 
 一个交互式的一维元胞自动机程序，使用 Bubble Tea 实现美观的终端用户界面。
 
-了解更多关于元胞自动机：[维基百科 - 元胞自动机](https://en.wikipedia.org/wiki/Cellular_automaton)
+[Wikipedia - Cellular Automaton](https://en.wikipedia.org/wiki/Cellular_automaton)
+
+**演示:**
+
+[![asciicast](https://asciinema.org/a/723316.svg)](https://asciinema.org/a/723316)
+
+更多演示: [Demos](./demos/cellular-automaton/README.md)
 
 ---
 
@@ -19,6 +25,7 @@ _[English Version / 英文版本](README.md)_
 ```
 go-playground/
 ├── README.md                    # 主项目说明
+├── demos/                      # 演示录制文件和 GIF 图片
 ├── cellular-automaton/          # 元胞自动机
 ├── LICENSE                     # 项目许可证
 └── .gitignore                 # Git 忽略文件

@@ -10,7 +10,13 @@ A collection of interesting programs implemented in Go language. Each sub-projec
 
 An interactive one-dimensional cellular automaton program with a beautiful terminal user interface built using Bubble Tea.
 
-Learn more about cellular automata: [Wikipedia - Cellular Automaton](https://en.wikipedia.org/wiki/Cellular_automaton)
+[Wikipedia - Cellular Automaton](https://en.wikipedia.org/wiki/Cellular_automaton)
+
+**Demo:**
+
+[![asciicast](https://asciinema.org/a/723316.svg)](https://asciinema.org/a/723316)
+
+More demos: [Demos](./demos/cellular-automaton/README.md)
 
 ---
 
@@ -19,6 +25,7 @@ Learn more about cellular automata: [Wikipedia - Cellular Automaton](https://en.
 ```
 go-playground/
 ├── README.md                    # Main project documentation
+├── demos/                      # Demo recordings and GIFs
 ├── cellular-automaton/          # Cellular Automaton
 ├── LICENSE                     # Project license
 └── .gitignore                 # Git ignore file

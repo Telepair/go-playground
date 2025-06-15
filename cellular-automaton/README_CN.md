@@ -2,7 +2,13 @@
 
 _[English Version / 英文版本](README.md)_
 
+[Wikipedia - Cellular Automaton](https://en.wikipedia.org/wiki/Cellular_automaton)
+
 一个高度可定制的一维元胞自动机终端用户界面(TUI)实现。
+
+[![asciicast](https://asciinema.org/a/723316.svg)](https://asciinema.org/a/723316)
+
+更多演示: [Demos](../demos/cellular-automaton/README.md)
 
 ## 功能特性
 

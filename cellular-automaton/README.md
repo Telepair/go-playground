@@ -2,7 +2,13 @@
 
 _[Chinese Version / 中文版本](README_CN.md)_
 
+[Wikipedia - Cellular Automaton](https://en.wikipedia.org/wiki/Cellular_automaton)
+
 A Terminal User Interface (TUI) implementation of 1D cellular automata with highly customizable rendering options.
+
+[![asciicast](https://asciinema.org/a/723316.svg)](https://asciinema.org/a/723316)
+
+More demos: [Demos](../demos/cellular-automaton/README.md)
 
 ## Features
 
