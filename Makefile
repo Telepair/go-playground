@@ -6,14 +6,21 @@ GOIMPORTS := $(shell go env GOPATH)/bin/goimports
 GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 OSV_SCANNER := $(shell go env GOPATH)/bin/osv-scanner
 
+# Colors for output
+GREEN := \033[32m
+YELLOW := \033[33m
+RED := \033[31m
+RESET := \033[0m
+
+.DEFAULT_GOAL := help
+
 .PHONY: help
 help:
-	@echo "Usage: make <target>"
+	@echo "$(GREEN)Usage: make <target>$(RESET)"
 	@echo "  build-cellular-automaton  Build the cellular automaton"
 	@echo "  test-cellular-automaton   Test the cellular automaton"
-	@echo "  clean-cellular-automaton  Clean the cellular automaton"
 	@echo ""
-	@echo "Cellular Automaton:" 
+	@echo "$(GREEN)Cellular Automaton:$(RESET)" 
 	@echo "  cellular-automaton-basic       Run the basic cellular automaton"
 	@echo "  cellular-automaton-sierpinski  Run the sierpinski cellular automaton"
 	@echo "  cellular-automaton-turing      Run the turing cellular automaton"
@@ -23,10 +30,15 @@ help:
 	@echo "  cellular-automaton-fixed       Run the fixed cellular automaton"
 	@echo "  cellular-automaton-periodic    Run the periodic cellular automaton"
 	@echo "  cellular-automaton-reflect     Run the reflect cellular automaton"
+	@echo ""
+	@echo "$(GREEN)Others:$(RESET)"
+	@echo "  ensure-tools              Ensure tools are installed"
+	@echo "  clean                     Clean binary and cache"
+	@echo "  help                      Show this help message"
 
 # Build target
 .PHONY: build-cellular-automaton
-build-cellular-automaton:
+build-cellular-automaton: ensure-tools
 	@echo "  >  Formatting cellular automaton..."
 	cd cellular-automaton && go mod tidy
 	cd cellular-automaton && go fmt ./...
@@ -46,10 +58,27 @@ test-cellular-automaton:
 	cd cellular-automaton && go test -v -race ./...
 	cd cellular-automaton && go test -v -bench=. ./...
 
-.PHONY: clean-cellular-automaton
-clean-cellular-automaton:
+.PHONY: ensure-tools
+ensure-tools:
+	@echo "  >  Ensuring tools..."
+	@if [ ! -x "$(GOIMPORTS)" ]; then \
+		echo "$(YELLOW)  >  Installing goimports...$(RESET)"; \
+		go install golang.org/x/tools/cmd/goimports@latest; \
+	fi
+	@if [ ! -x "$(GOLANGCI_LINT)" ]; then \
+		echo "$(YELLOW)  >  Installing golangci-lint...$(RESET)"; \
+		go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6; \
+	fi
+	@if [ ! -x "$(OSV_SCANNER)" ]; then \
+		echo "$(YELLOW)  >  Installing osv-scanner...$(RESET)"; \
+		go install github.com/google/osv-scanner/v2/cmd/osv-scanner@v2; \
+	fi
+	@echo "  >  Tools ensured successfully."
+
+.PHONY: clean
+clean:
 	@echo "  >  Cleaning cellular automaton..."
-	cd cellular-automaton && git clean -xdf
+	git clean -xdf
 	@echo "  >  Cellular automaton cleaned successfully."
 
 # Cellular Automaton demos
