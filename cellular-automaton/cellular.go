@@ -1,9 +1,10 @@
 package main
 
+import "fmt"
+
 var (
-	defaultRule     = 30
-	defaultMaxSteps = 0
-	defaultCols     = 1
+	defaultRule = 30
+	defaultCols = 1
 )
 
 // CellularAutomaton represents a 1D cellular automaton
@@ -12,38 +13,15 @@ type CellularAutomaton struct {
 	nextRow    []bool
 	rule       int
 	generation int // Track actual generation number for infinite mode
-	maxSteps   int // if 0, infinite mode
 	cols       int
 	boundary   BoundaryType // Boundary condition type
 	ruleTable  [8]bool      // Pre-computed rule table for better performance
 }
 
 // NewCellularAutomaton creates a new cellular automaton instance
-func NewCellularAutomaton(rule, maxSteps, cols int, boundary BoundaryType) *CellularAutomaton {
-	if cols <= 0 {
-		cols = defaultCols
-	}
-	if rule < 0 || rule > 255 {
-		rule = defaultRule
-	}
-	if maxSteps < 0 {
-		maxSteps = defaultMaxSteps
-	}
-	ca := &CellularAutomaton{
-		rule:       rule,
-		generation: 0,
-		maxSteps:   maxSteps,
-		boundary:   boundary,
-		cols:       cols,
-		currentRow: make([]bool, cols),
-		nextRow:    make([]bool, cols),
-	}
-
-	// Pre-compute rule table for better performance
-	ca.computeRuleTable()
-
-	// Set initial seed in the current row so it displays immediately
-	ca.currentRow[cols/2] = true
+func NewCellularAutomaton(rule, cols int, boundary BoundaryType) *CellularAutomaton {
+	ca := &CellularAutomaton{}
+	ca.Reset(rule, cols, boundary)
 	return ca
 }
 
@@ -121,10 +99,6 @@ func (ca *CellularAutomaton) getRuleBit(idx int) bool {
 
 // Step advances the cellular automaton by one generation
 func (ca *CellularAutomaton) Step() bool {
-	if ca.maxSteps > 0 && ca.generation >= ca.maxSteps {
-		return false
-	}
-
 	// Calculate next generation based on current row
 	for i := range ca.cols {
 		ca.nextRow[i] = ca.getRuleBit(i)
@@ -148,26 +122,21 @@ func (ca *CellularAutomaton) GetGeneration() int {
 }
 
 // Reset resets the cellular automaton to its initial state
-// This is more efficient than creating new slices
-func (ca *CellularAutomaton) Reset() {
-	// Clear both rows efficiently
-	for i := range ca.currentRow {
-		ca.currentRow[i] = false
-		ca.nextRow[i] = false
+func (ca *CellularAutomaton) Reset(rule, cols int, boundary BoundaryType) {
+	if cols <= 0 {
+		fmt.Printf("cols <= 0, using default cols: %d\n", defaultCols)
+		cols = defaultCols
 	}
-
-	// Set initial seed in current row
-	ca.currentRow[ca.cols/2] = true
-	ca.generation = 0
-}
-
-// SetRule updates the rule and recomputes the rule table
-func (ca *CellularAutomaton) SetRule(rule int) {
+	if rule < 0 || rule > 255 {
+		fmt.Printf("rule < 0 || rule > 255, using default rule: %d\n", defaultRule)
+		rule = defaultRule
+	}
 	ca.rule = rule
+	ca.cols = cols
+	ca.boundary = boundary
+	ca.currentRow = make([]bool, ca.cols)
+	ca.nextRow = make([]bool, ca.cols)
+	ca.generation = 0
 	ca.computeRuleTable()
-}
-
-// IsFinished returns true if the cellular automaton has reached its maximum steps
-func (ca *CellularAutomaton) IsFinished() bool {
-	return ca.maxSteps > 0 && ca.generation >= ca.maxSteps
+	ca.currentRow[ca.cols/2] = true
 }

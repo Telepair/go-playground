@@ -1,3 +1,4 @@
+// buffer.go
 package main
 
 // GridRingBuffer efficiently manages grid history with a circular buffer

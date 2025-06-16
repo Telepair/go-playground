@@ -1,18 +1,10 @@
 package main
 
 import (
-	"strings"
+	"fmt"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
-)
-
-// Language represents the supported languages
-type Language int
-
-// Language constants
-const (
-	English Language = iota
-	Chinese
 )
 
 // UI layout constants for consistent alignment
@@ -72,56 +64,69 @@ var (
 )
 
 // UI text constants with enhanced formatting and icons
-var (
-	// Status icons and labels
-	generationIcon = "⚡"
-	speedIcon      = "🔄"
-	sizeIcon       = "📐"
-	cellIcon       = "🔹"
-	boundaryIcon   = "🔒"
-	pausedIcon     = "⏸️"
-	playingIcon    = "▶️"
-	finishedIcon   = "✅"
+const (
+	// Header Line
+	HeaderCN = "🧬 元胞自动机 🧬"
+	HeaderEN = "🧬 Cellular Automaton 🧬"
 
-	// Chinese text templates with enhanced formatting
-	headerTitleFmtCN = "🧬 元胞自动机 - 规则 %d 🧬"
+	// Status Line
+	RuleIcon    = "🧬"
+	RuleLabelCN = "规则"
+	RuleLabelEN = "Rule"
 
-	// Status line components
-	statusGenerationLabelCN = "代数"
-	statusRefreshLabelCN    = "刷新"
-	statusSizeLabelCN       = "尺寸"
-	statusCellSizeLabelCN   = "元胞"
-	statusBoundaryLabelCN   = "边界"
-	statusPausedLabelCN     = "状态"
+	GenerationIcon    = "⚡"
+	GenerationLabelCN = "代数"
+	GenerationLabelEN = "Gen"
 
-	// English text templates with enhanced formatting
-	headerTitleFmtEN = "🧬 Cellular Automaton - Rule %d 🧬"
+	SpeedIcon    = "🔄"
+	SpeedLabelCN = "刷新"
+	SpeedLabelEN = "Speed"
 
-	// Status line components
-	statusGenerationLabelEN = "Gen"
-	statusRefreshLabelEN    = "Speed"
-	statusSizeLabelEN       = "Size"
-	statusCellSizeLabelEN   = "Cell"
-	statusBoundaryLabelEN   = "Boundary"
-	statusPausedLabelEN     = "Status"
+	SizeIcon    = "📐"
+	SizeLabelCN = "尺寸"
+	SizeLabelEN = "Size"
 
-	// Status text messages
-	statusPausedCN   = "已暂停"
-	statusRunningCN  = "运行中"
-	statusFinishedCN = "已完成"
-	statusPausedEN   = "PAUSED"
-	statusRunningEN  = "RUNNING"
-	statusFinishedEN = "FINISHED"
+	BoundaryIcon    = "🔒"
+	BoundaryLabelCN = "边界"
+	BoundaryLabelEN = "Boundary"
+
+	PausedLabelCN = "状态"
+	PausedLabelEN = "Status"
+	PlayingIcon   = "▶️"
+	PlayingCN     = "运行"
+	PlayingEN     = "Running"
+	PausedIcon    = "⏸️"
+	PausedEN      = "Paused"
+	PausedCN      = "已暂停"
+
+	// Control Line
+	SelectRuleKey     = "T"
+	SelectRuleLabelCN = "选择规则"
+	SelectRuleLabelEN = "Select Rule"
+
+	SelectBoundaryKey     = "B"
+	SelectBoundaryLabelCN = "选择边界"
+	SelectBoundaryLabelEN = "Select Boundary"
+
+	SpeedControlKey     = "+/-"
+	SpeedControlLabelCN = "加速/减速"
+	SpeedControlLabelEN = "Speed Up/Down"
+
+	ResetKey     = "R"
+	ResetLabelCN = "重置"
+	ResetLabelEN = "Reset"
+
+	LanguageKey     = "L"
+	LanguageLabelCN = "切换语言"
+	LanguageLabelEN = "Switch Language"
+
+	QuitKey     = "Space/Q"
+	QuitLabelCN = "暂停/退出"
+	QuitLabelEN = "Pause/Quit"
 )
 
 // RenderOptions contains rendering configuration with cached styles
 type RenderOptions struct {
-	CellSize   int    // Size of each cell (1-3)
-	AliveColor string // Color for alive cells
-	DeadColor  string // Color for dead cells
-	AliveChar  string // Character for alive cells
-	DeadChar   string // Character for dead cells
-	// Cached styled strings for better performance
 	aliveStyled string         // Cached styled alive cell
 	deadStyled  string         // Cached styled dead cell
 	aliveStyle  lipgloss.Style // Cached alive style
@@ -129,29 +134,106 @@ type RenderOptions struct {
 }
 
 // NewRenderOptions creates optimized render options with pre-computed styles
-func NewRenderOptions(cfg *Config) *RenderOptions {
-	if cfg == nil {
-		cfg = NewConfig() // Use default config if nil
+func NewRenderOptions(aliveColor, deadColor, aliveChar, deadChar string) RenderOptions {
+	return RenderOptions{
+		aliveStyle:  lipgloss.NewStyle().Foreground(lipgloss.Color(aliveColor)),
+		deadStyle:   lipgloss.NewStyle().Foreground(lipgloss.Color(deadColor)),
+		aliveStyled: lipgloss.NewStyle().Foreground(lipgloss.Color(aliveColor)).Render(aliveChar),
+		deadStyled:  lipgloss.NewStyle().Foreground(lipgloss.Color(deadColor)).Render(deadChar),
+	}
+}
+
+// formatTableCell formats a table cell with icon, label, and value
+func formatStatus(icon, label, value string) string {
+	return tableCellStyle.Render(fmt.Sprintf("%s %s: %s", icon, tableLabelStyle.Render(label), tableValueStyle.Render(value)))
+}
+
+func formatControl(key, label string) string {
+	return tableCellStyle.Render(fmt.Sprintf("%s %s", controlKeyStyle.Render(key), tableLabelStyle.Render(label)))
+}
+
+// GetHeaderLine returns the header display string
+func GetHeaderLine(language Language) string {
+	style := headerStyle.Inherit(tableStyle)
+	if language == Chinese {
+		return style.Render(HeaderCN)
+	}
+	return style.Render(HeaderEN)
+}
+
+// GetStatusLine returns the status display string for the first row
+func GetStatusLine(language Language, rule int, generation int, speed time.Duration, rows, cols int, boundary BoundaryType, paused bool) string {
+	style := statusTableStyle.Inherit(tableStyle)
+	if language == Chinese {
+		pausedStatus := PlayingCN
+		if paused {
+			pausedStatus = PausedCN
+		}
+		tableContent := lipgloss.JoinVertical(lipgloss.Left,
+			lipgloss.JoinHorizontal(lipgloss.Top,
+				formatStatus(RuleIcon, RuleLabelCN, fmt.Sprintf("%d", rule)),
+				formatStatus(GenerationIcon, GenerationLabelCN, fmt.Sprintf("%d", generation)),
+				formatStatus(SpeedIcon, SpeedLabelCN, speed.String()),
+			),
+			lipgloss.JoinHorizontal(lipgloss.Top,
+				formatStatus(BoundaryIcon, BoundaryLabelCN, boundary.ToString(language)),
+				formatStatus(SizeIcon, SizeLabelCN, fmt.Sprintf("%d×%d", rows, cols)),
+				formatStatus(PausedIcon, PausedLabelCN, pausedStatus),
+			),
+		)
+		return style.Render(tableContent)
 	}
 
-	options := &RenderOptions{
-		CellSize:   cfg.CellSize,
-		AliveColor: cfg.AliveColor,
-		DeadColor:  cfg.DeadColor,
-		AliveChar:  cfg.AliveChar,
-		DeadChar:   cfg.DeadChar,
+	pausedStatus := PlayingEN
+	if paused {
+		pausedStatus = PausedEN
 	}
 
-	// Pre-compute styles for better performance
-	options.aliveStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(options.AliveColor))
-	options.deadStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(options.DeadColor))
+	tableContent := lipgloss.JoinVertical(lipgloss.Left,
+		lipgloss.JoinHorizontal(lipgloss.Top,
+			formatStatus(RuleIcon, RuleLabelEN, fmt.Sprintf("%d", rule)),
+			formatStatus(GenerationIcon, GenerationLabelEN, fmt.Sprintf("%d", generation)),
+			formatStatus(SpeedIcon, SpeedLabelEN, speed.String()),
+		),
+		lipgloss.JoinHorizontal(lipgloss.Top,
+			formatStatus(BoundaryIcon, BoundaryLabelEN, boundary.ToString(language)),
+			formatStatus(SizeIcon, SizeLabelEN, fmt.Sprintf("%d×%d", rows, cols)),
+			formatStatus(PausedIcon, PausedLabelEN, pausedStatus),
+		),
+	)
+	return style.Render(tableContent)
+}
 
-	// Pre-compute styled strings with repeated characters
-	aliveCell := strings.Repeat(options.AliveChar, options.CellSize)
-	deadCell := strings.Repeat(options.DeadChar, options.CellSize)
+// GetControlLine returns the control display string: T,B,R + Space, L, Q
+func GetControlLine(language Language) string {
+	style := controlTableStyle.Inherit(tableStyle)
+	if language == Chinese {
+		tableContent := lipgloss.JoinVertical(lipgloss.Left,
+			lipgloss.JoinHorizontal(lipgloss.Top,
+				formatControl(SelectRuleKey, SelectRuleLabelCN),
+				formatControl(SelectBoundaryKey, SelectBoundaryLabelCN),
+				formatControl(SpeedControlKey, SpeedControlLabelCN),
+			),
+			lipgloss.JoinHorizontal(lipgloss.Top,
+				formatControl(ResetKey, ResetLabelCN),
+				formatControl(LanguageKey, LanguageLabelCN),
+				formatControl(QuitKey, QuitLabelCN),
+			),
+		)
+		return style.Render(tableContent)
+	}
 
-	options.aliveStyled = options.aliveStyle.Render(aliveCell)
-	options.deadStyled = options.deadStyle.Render(deadCell)
-
-	return options
+	tableContent := lipgloss.JoinVertical(lipgloss.Left,
+		lipgloss.JoinHorizontal(lipgloss.Top,
+			formatControl(SelectRuleKey, SelectRuleLabelEN),
+			formatControl(SelectBoundaryKey, SelectBoundaryLabelEN),
+			formatControl(SpeedControlKey, SpeedControlLabelEN),
+		),
+		lipgloss.JoinHorizontal(lipgloss.Top,
+			formatControl(ResetKey, ResetLabelEN),
+			formatControl(LanguageKey, LanguageLabelEN),
+			formatControl(QuitKey, QuitLabelEN),
+		),
+	)
+	return style.Render(tableContent)
 }

@@ -14,9 +14,7 @@ _[English Version / 英文版本](README.md)_
 
 **演示:**
 
-[![asciicast](https://asciinema.org/a/723316.svg)](https://asciinema.org/a/723316)
-
-更多演示: [Demos](./demos/cellular-automaton/README.md)
+[![asciicast](https://asciinema.org/a/723358.svg)](https://asciinema.org/a/723358)
 
 ---
 

@@ -2,19 +2,8 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"strings"
 	"time"
 )
-
-// Logger for configuration warnings and errors
-var configLogger *log.Logger
-
-func init() {
-	// Initialize logger to write to stderr to avoid UI pollution
-	configLogger = log.New(os.Stderr, "[CONFIG] ", log.LstdFlags|log.Lshortfile)
-}
 
 // BoundaryType represents the boundary type of the cellular automaton
 type BoundaryType int
@@ -26,39 +15,65 @@ const (
 	BoundaryReflect                      // Reflective boundary (mirror)
 )
 
-// String returns the string representation of boundary type
-func (bt BoundaryType) String() string {
+// ToString returns the string representation of boundary type
+func (bt BoundaryType) ToString(language Language) string {
 	switch bt {
 	case BoundaryPeriodic:
-		return "periodic"
+		if language == Chinese {
+			return "周期"
+		}
+		return "Periodic"
 	case BoundaryFixed:
-		return "fixed"
+		if language == Chinese {
+			return "固定"
+		}
+		return "Fixed"
 	case BoundaryReflect:
-		return "reflect"
-	default:
-		return "periodic"
+		if language == Chinese {
+			return "反射"
+		}
+		return "Reflect"
 	}
+	if language == Chinese {
+		return "周期"
+	}
+	return "Periodic"
 }
 
-// ParseBoundaryType parses string to BoundaryType
-func ParseBoundaryType(s string) BoundaryType {
-	switch strings.ToLower(s) {
-	case "periodic":
-		return BoundaryPeriodic
-	case "fixed":
-		return BoundaryFixed
-	case "reflect", "reflective":
-		return BoundaryReflect
-	default:
-		return BoundaryPeriodic
+// Language represents the supported languages
+type Language int
+
+// Language constants
+const (
+	English Language = iota
+	Chinese
+)
+
+// ToString returns the string representation of language
+func (l Language) ToString(language Language) string {
+	switch l {
+	case English:
+		if language == Chinese {
+			return "英文"
+		}
+		return "en"
+	case Chinese:
+		if language == Chinese {
+			return "中文"
+		}
+		return "cn"
 	}
+	if language == Chinese {
+		return "英文"
+	}
+	return "en"
 }
 
 // Application constants
 const (
 	// Grid and display constants
-	DefaultWindowRows = 35 // Default window rows
-	DefaultWindowCols = 60 // Default window columns
+	DefaultWindowRows = 30 // Default window rows
+	DefaultWindowCols = 80 // Default window columns
 	MinWindowRows     = 10 // Minimum window rows
 	MinWindowCols     = 20 // Minimum window columns
 
@@ -67,18 +82,12 @@ const (
 	MinRule     = 0   // Minimum rule number
 	MaxRule     = 255 // Maximum rule number
 
-	// Cell size validation
-	DefaultCellSize = 1 // Default cell size
-	MinCellSize     = 1 // Minimum cell size
-	MaxCellSize     = 3 // Maximum cell size
-
 	// Timing constants
 	DefaultRefreshRate = 200 * time.Millisecond // Default refresh rate in milliseconds
 	MinRefreshRate     = 1 * time.Millisecond   // Minimum refresh rate in milliseconds
 
 	// Default values
-	DefaultSteps    = 30               // Default number of steps
-	DefaultLanguage = "en"             // Default language
+	DefaultLanguage = English          // Default language
 	DefaultBoundary = BoundaryPeriodic // Default boundary type
 
 	// Colors
@@ -96,136 +105,73 @@ const (
 
 // Config holds all application configuration
 type Config struct {
-	Rule         int
-	Rows         int
-	Cols         int
-	Steps        int
-	CellSize     int
-	AliveColor   string
-	DeadColor    string
-	AliveChar    string
-	DeadChar     string
-	RefreshRate  time.Duration
-	Language     Language
-	Boundary     BoundaryType
-	InfiniteMode bool
+	Rule       int
+	Rows       int
+	Cols       int
+	AliveColor string
+	DeadColor  string
+	AliveChar  string
+	DeadChar   string
+	Language   Language
 }
 
 // NewConfig creates a new configuration with default values
 func NewConfig() *Config {
 	return &Config{
-		Rule:        DefaultRule,
-		Rows:        DefaultWindowRows,
-		Cols:        DefaultWindowCols,
-		Steps:       DefaultSteps,
-		CellSize:    DefaultCellSize,
-		AliveColor:  DefaultAliveColor,
-		DeadColor:   DefaultDeadColor,
-		AliveChar:   DefaultAliveChar,
-		DeadChar:    DefaultDeadChar,
-		RefreshRate: DefaultRefreshRate,
-		Language:    English,
-		Boundary:    DefaultBoundary,
+		Rule:       DefaultRule,
+		Rows:       DefaultWindowRows,
+		Cols:       DefaultWindowCols,
+		AliveColor: DefaultAliveColor,
+		DeadColor:  DefaultDeadColor,
+		AliveChar:  DefaultAliveChar,
+		DeadChar:   DefaultDeadChar,
+		Language:   English,
 	}
 }
 
-// SetRule sets the cellular automaton rule with validation
-func (c *Config) SetRule(rule int) error {
-	if rule < MinRule || rule > MaxRule {
-		err := fmt.Errorf("invalid rule %d, must be between %d and %d", rule, MinRule, MaxRule)
-		configLogger.Printf("Warning: %v, using default rule %d", err, DefaultRule)
+// Check validates the configuration
+func (c *Config) Check() {
+	if c.Rule < MinRule || c.Rule > MaxRule {
+		fmt.Printf("invalid rule %d, must be between %d and %d, using default rule %d\n", c.Rule, MinRule, MaxRule, DefaultRule)
 		c.Rule = DefaultRule
-		return err
 	}
-	c.Rule = rule
-	return nil
-}
-
-// SetSteps sets the number of steps and sets the infinite mode based on the number of steps
-func (c *Config) SetSteps(steps int) {
-	c.Steps = steps
-	c.InfiniteMode = c.Steps == 0
-}
-
-// SetCellSize sets the cell size with validation
-func (c *Config) SetCellSize(cellSize int) error {
-	if cellSize < MinCellSize || cellSize > MaxCellSize {
-		err := fmt.Errorf("invalid cell size %d, must be between %d and %d", cellSize, MinCellSize, MaxCellSize)
-		configLogger.Printf("Warning: %v, using default cell size %d", err, DefaultCellSize)
-		c.CellSize = DefaultCellSize
-		return err
+	if c.Rows < MinWindowRows {
+		fmt.Printf("invalid number of rows %d, must be at least %d, using default number of rows %d\n", c.Rows, MinWindowRows, DefaultWindowRows)
+		c.Rows = DefaultWindowRows
 	}
-	c.CellSize = cellSize
-	return nil
-}
-
-// SetRefreshRate sets the refresh rate with validation
-func (c *Config) SetRefreshRate(duration time.Duration) error {
-	if duration < MinRefreshRate {
-		err := fmt.Errorf("invalid refresh rate %s, must be at least %s", duration, MinRefreshRate)
-		configLogger.Printf("Warning: %v, using default refresh rate %s", err, DefaultRefreshRate)
-		c.RefreshRate = DefaultRefreshRate
-		return err
+	if c.Cols < MinWindowCols {
+		fmt.Printf("invalid number of columns %d, must be at least %d, using default number of columns %d\n", c.Cols, MinWindowCols, DefaultWindowCols)
+		c.Cols = DefaultWindowCols
 	}
-	c.RefreshRate = duration
-	return nil
+	if c.Language != English && c.Language != Chinese {
+		fmt.Printf("invalid language %s, must be en or cn, using default language %s\n", c.Language.ToString(c.Language), DefaultLanguage.ToString(c.Language))
+		c.Language = DefaultLanguage
+	}
+	if !isValidHexColor(c.AliveColor) {
+		fmt.Printf("invalid alive color format: %s, using default\n", c.AliveColor)
+		c.AliveColor = DefaultAliveColor
+	}
+	if !isValidHexColor(c.DeadColor) {
+		fmt.Printf("invalid dead color format: %s, using default\n", c.DeadColor)
+		c.DeadColor = DefaultDeadColor
+	}
+	if len([]rune(c.AliveChar)) != 1 {
+		fmt.Printf("invalid alive character format: %s, using default\n", c.AliveChar)
+		c.AliveChar = DefaultAliveChar
+	}
+	if len([]rune(c.DeadChar)) != 1 {
+		fmt.Printf("invalid dead character format: %s, using default\n", c.DeadChar)
+		c.DeadChar = DefaultDeadChar
+	}
 }
 
-// SetLanguage sets the language
-func (c *Config) SetLanguage(lang string) {
-	langLower := strings.ToLower(lang)
-	if langLower == "cn" || langLower == "zh" {
+// SetLang sets the language
+func (c *Config) SetLang(lang string) {
+	if lang == "cn" || lang == "zh" {
 		c.Language = Chinese
 	} else {
 		c.Language = English
 	}
-}
-
-// SetBoundary sets the boundary type
-func (c *Config) SetBoundary(boundary string) {
-	c.Boundary = ParseBoundaryType(boundary)
-}
-
-// SetRows sets the number of rows with validation
-func (c *Config) SetRows(rows int) error {
-	if rows < MinWindowRows {
-		err := fmt.Errorf("invalid number of rows %d, must be at least %d", rows, MinWindowRows)
-		configLogger.Printf("Warning: %v, using default number of rows %d", err, DefaultWindowRows)
-		c.Rows = DefaultWindowRows
-		return err
-	}
-	c.Rows = rows
-	return nil
-}
-
-// SetCols sets the number of columns with validation
-func (c *Config) SetCols(cols int) error {
-	if cols < MinWindowCols {
-		err := fmt.Errorf("invalid number of columns %d, must be at least %d", cols, MinWindowCols)
-		configLogger.Printf("Warning: %v, using default number of columns %d", err, DefaultWindowCols)
-		c.Cols = DefaultWindowCols
-		return err
-	}
-	c.Cols = cols
-	return nil
-}
-
-// ValidateColors validates color format
-func (c *Config) ValidateColors() error {
-	// Simple hex color validation
-	if !isValidHexColor(c.AliveColor) {
-		err := fmt.Errorf("invalid alive color format: %s", c.AliveColor)
-		configLogger.Printf("Warning: %v, using default", err)
-		c.AliveColor = DefaultAliveColor
-		return err
-	}
-	if !isValidHexColor(c.DeadColor) {
-		err := fmt.Errorf("invalid dead color format: %s", c.DeadColor)
-		configLogger.Printf("Warning: %v, using default", err)
-		c.DeadColor = DefaultDeadColor
-		return err
-	}
-	return nil
 }
 
 // isValidHexColor checks if a string is a valid hex color

@@ -21,20 +21,19 @@
 2. 录制演示:
 
    ```bash
-   # Start recording and run make command directly
+   # Start recording
    # Note: After the program finishes running, press 'Q' to quit the program and complete the recording
-   mkdir -p ./demos/cellular-automaton
-   asciinema rec ./demos/cellular-automaton/colorful.cast --title "Cellular Automaton - Colorful" --command "make cellular-automaton-colorful"
+   asciinema rec ./demos/cellular-automaton.cast --title "Cellular Automaton" --command "./bin/cellular-automaton"
    ```
 
 3. 播放演示:
 
    ```bash
-   asciinema play ./demos/cellular-automaton/colorful.cast
+   asciinema play ./demos/cellular-automaton.cast
    ```
 
 4. 上传到 asciinema.org (可选):
 
    ```bash
-   asciinema upload ./demos/cellular-automaton/colorful.cast
+   asciinema upload ./demos/cellular-automaton.cast
    ```

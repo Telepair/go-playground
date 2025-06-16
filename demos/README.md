@@ -21,20 +21,19 @@ This directory contains demonstration recordings and GIF files for the Go Playgr
 2. Record a demo:
 
    ```bash
-   # Start recording and run make command directly
+   # Start recording
    # Note: After the program finishes running, press 'Q' to quit the program and complete the recording
-   mkdir -p ./demos/cellular-automaton
-   asciinema rec ./demos/cellular-automaton/colorful.cast --title "Cellular Automaton - Colorful" --command "make cellular-automaton-colorful"
+   asciinema rec ./demos/cellular-automaton.cast --title "Cellular Automaton" --command "./bin/cellular-automaton"
    ```
 
 3. Play the demo:
 
    ```bash
-   asciinema play ./demos/cellular-automaton/colorful.cast
+   asciinema play ./demos/cellular-automaton.cast
    ```
 
 4. Upload to asciinema.org (optional):
 
    ```bash
-   asciinema upload ./demos/cellular-automaton/colorful.cast
+   asciinema upload ./demos/cellular-automaton.cast
    ```
