@@ -16,18 +16,71 @@ An interactive one-dimensional cellular automaton program with a beautiful termi
 
 [![asciicast](https://asciinema.org/a/723358.svg)](https://asciinema.org/a/723358)
 
----
+### 🎮 [Conway's Game of Life](./conway-game-of-life/)
+
+A terminal user interface (TUI) implementation of Conway's Game of Life with multiple predefined patterns and highly customizable rendering options.
+
+[Wikipedia - Conway's Game of Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life)
+
+**Demo:**
+
+[![asciicast](https://asciinema.org/a/723376.svg)](https://asciinema.org/a/723376)
 
 ## Project Structure
 
 ```
 go-playground/
 ├── README.md                    # Main project documentation
-├── demos/                      # Demo recordings and GIFs
 ├── cellular-automaton/          # Cellular Automaton
+├── conway-game-of-life/         # Conway Game of Life
 ├── LICENSE                     # Project license
 └── .gitignore                 # Git ignore file
 ```
+
+## Using Asciinema to record demos
+
+1. Install asciinema:
+
+   ```bash
+   # macOS
+   brew install asciinema
+
+   # Linux
+   pip install asciinema
+   ```
+
+2. Record a demo:
+
+   ```bash
+   # Start recording
+   # Note: After the program finishes running, press 'Q' to quit the program and complete the recording
+
+   # Cellular Automaton
+   asciinema rec ./demos/cellular-automaton.cast --title "Cellular Automaton" --command "./bin/cellular-automaton"
+
+   # Conway Game of Life
+   asciinema rec ./demos/conway-game-of-life.cast --title "Conway Game of Life" --command "./bin/conway-game-of-life"
+   ```
+
+3. Play the demo:
+
+   ```bash
+   # Cellular Automaton
+   asciinema play ./demos/cellular-automaton.cast
+
+   # Conway Game of Life
+   asciinema play ./demos/conway-game-of-life.cast
+   ```
+
+4. Upload to asciinema.org (optional):
+
+   ```bash
+   # Cellular Automaton
+    asciinema upload ./demos/cellular-automaton.cast
+
+   # Conway Game of Life
+   asciinema upload ./demos/conway-game-of-life.cast
+   ```
 
 ## Technical Features
 

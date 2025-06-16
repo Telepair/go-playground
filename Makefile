@@ -19,9 +19,14 @@ help:
 	@echo "$(GREEN)Usage: make <target>$(RESET)"
 	@echo "  build-cellular-automaton  Build the cellular automaton"
 	@echo "  test-cellular-automaton   Test the cellular automaton"
+	@echo "  build-conway-game-of-life  Build the conway game of life"
+	@echo "  test-conway-game-of-life   Test the conway game of life"
 	@echo ""
 	@echo "$(GREEN)Cellular Automaton:$(RESET)" 
 	@echo "  cellular-automaton       Run the cellular automaton"
+	@echo ""
+	@echo "$(GREEN)Conway Game of Life:$(RESET)"
+	@echo "  conway-game-of-life             Run the conway game of life"
 	@echo ""
 	@echo "$(GREEN)Others:$(RESET)"
 	@echo "  ensure-tools              Ensure tools are installed"
@@ -52,6 +57,29 @@ test-cellular-automaton:
 	cd cellular-automaton && go test -v -coverprofile=coverage.out
 	cd cellular-automaton && go tool cover -func=coverage.out
 
+.PHONY: build-conway-game-of-life
+build-conway-game-of-life: ensure-tools
+	@echo "  >  Formatting conway game of life..."
+	cd conway-game-of-life && go mod tidy
+	cd conway-game-of-life && go fmt ./...
+	cd conway-game-of-life && $(GOIMPORTS) -l -w .
+	@echo "  >  Vetting conway game of life..."
+	cd conway-game-of-life && go vet ./...
+	cd conway-game-of-life && $(GOLANGCI_LINT) run ./...
+	@echo "  >  Scanning for vulnerabilities..."
+	cd conway-game-of-life && $(OSV_SCANNER) -r .
+	@echo "  >  Building conway game of life..."
+	cd conway-game-of-life && go build -o ../bin/conway-game-of-life .
+	@echo "  >  Conway game of life built successfully."
+
+.PHONY: test-conway-game-of-life
+test-conway-game-of-life:
+	@echo "  >  Testing conway game of life..."
+	cd conway-game-of-life && go test -v -race ./...
+	cd conway-game-of-life && go test -v -bench=. -benchmem -run=^$
+	cd conway-game-of-life && go test -v -coverprofile=coverage.out
+	cd conway-game-of-life && go tool cover -func=coverage.out
+
 .PHONY: ensure-tools
 ensure-tools:
 	@echo "  >  Ensuring tools..."
@@ -80,3 +108,9 @@ clean:
 cellular-automaton: build-cellular-automaton
 	@echo "Demo Cellular Automaton: Basic Rule 30..."
 	./bin/cellular-automaton
+
+# Conway Game of Life demos
+.PHONY: conway-game-of-life
+conway-game-of-life: build-conway-game-of-life
+	@echo "Demo Conway Game of Life: Default Settings..."
+	./bin/conway-game-of-life

@@ -34,3 +34,6 @@ go.work.sum
 
 # Bin
 bin/
+
+# Asciinema
+*.cast

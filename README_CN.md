@@ -16,18 +16,71 @@ _[English Version / 英文版本](README.md)_
 
 [![asciicast](https://asciinema.org/a/723358.svg)](https://asciinema.org/a/723358)
 
----
+### 🎮 [康威生命游戏 (Conway's Game of Life)](./conway-game-of-life/)
+
+一个具有多种预定义模式和高度可定制渲染选项的康威生命游戏终端用户界面(TUI)实现。
+
+[Wikipedia - Conway's Game of Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life)
+
+**演示:**
+
+[![asciicast](https://asciinema.org/a/723376.svg)](https://asciinema.org/a/723376)
 
 ## 项目结构
 
 ```
 go-playground/
 ├── README.md                    # 主项目说明
-├── demos/                      # 演示录制文件和 GIF 图片
 ├── cellular-automaton/          # 元胞自动机
+├── conway-game-of-life/         # 康威生命游戏
 ├── LICENSE                     # 项目许可证
 └── .gitignore                 # Git 忽略文件
 ```
+
+## 使用 Asciinema 录制演示
+
+1. 安装 asciinema:
+
+   ```bash
+   # macOS
+   brew install asciinema
+
+   # Linux
+   pip install asciinema
+   ```
+
+2. 录制演示:
+
+   ```bash
+   # Start recording
+   # Note: After the program finishes running, press 'Q' to quit the program and complete the recording
+
+   # Cellular Automaton
+   asciinema rec ./cellular-automaton.cast --title "Cellular Automaton" --command "./bin/cellular-automaton"
+
+   # Conway Game of Life
+   asciinema rec ./conway-game-of-life.cast --title "Conway Game of Life" --command "./bin/conway-game-of-life"
+   ```
+
+3. 播放演示:
+
+   ```bash
+   # Cellular Automaton
+   asciinema play ./cellular-automaton.cast
+
+   # Conway Game of Life
+   asciinema play ./conway-game-of-life.cast
+   ```
+
+4. 上传到 asciinema.org (可选):
+
+   ```bash
+   # Cellular Automaton
+   asciinema upload ./cellular-automaton.cast
+
+   # Conway Game of Life
+   asciinema upload ./conway-game-of-life.cast
+   ```
 
 ## 技术特点
 
