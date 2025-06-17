@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -26,29 +28,38 @@ func main() {
 	var rule = flag.Int("rule", DefaultRule, "Cellular automaton rule number (0-255)")
 	var rows = flag.Int("rows", DefaultWindowRows, "Number of rows")
 	var cols = flag.Int("cols", DefaultWindowCols, "Number of columns")
-
 	var aliveColor = flag.String("alive-color", DefaultAliveColor, "Alive cell color (hex)")
 	var deadColor = flag.String("dead-color", DefaultDeadColor, "Dead cell color (hex)")
 	var aliveChar = flag.String("alive-char", DefaultAliveChar, "Alive cell character")
 	var deadChar = flag.String("dead-char", DefaultDeadChar, "Dead cell character")
 	var lang = flag.String("lang", DefaultLanguage.ToString(DefaultLanguage), "Language (en/cn)")
+	var enableProfiling = flag.Bool("profile", false, "Enable profiling and monitoring")
+	var profilePort = flag.String("profile-port", ":6060", "Profiling server port")
 
 	flag.Parse()
 
+	if *enableProfiling {
+		go func() {
+			log.Printf("Starting pprof server on http://localhost%s/debug/pprof/", *profilePort)
+			log.Println(http.ListenAndServe(*profilePort, nil)) //nolint:gosec
+		}()
+	}
+
 	// Create and configure application
-	config := NewConfig()
-	config.Rule = *rule
-	config.Rows = *rows
-	config.Cols = *cols
-	config.AliveColor = *aliveColor
-	config.DeadColor = *deadColor
-	config.AliveChar = *aliveChar
-	config.DeadChar = *deadChar
+	config := Config{
+		Rule:       *rule,
+		Rows:       *rows,
+		Cols:       *cols,
+		AliveColor: *aliveColor,
+		DeadColor:  *deadColor,
+		AliveChar:  *aliveChar,
+		DeadChar:   *deadChar,
+	}
 	config.SetLang(*lang)
 	config.Check()
 
 	// Create initial model
-	initialModel := NewModel(*config)
+	initialModel := NewModel(config)
 
 	// Run the application
 	p := tea.NewProgram(initialModel, tea.WithAltScreen())

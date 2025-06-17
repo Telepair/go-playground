@@ -1,4 +1,4 @@
-// buffer.go
+// Package main implements a cellular automaton simulator with grid history management.
 package main
 
 // GridRingBuffer efficiently manages grid history with a circular buffer

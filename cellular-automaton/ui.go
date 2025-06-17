@@ -63,6 +63,7 @@ type tickMsg time.Time
 
 // Init initializes the model
 func (m Model) Init() tea.Cmd {
+	// Always start the timer when initializing unless already quitting
 	return tea.Tick(m.refreshRate, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})
@@ -70,14 +71,15 @@ func (m Model) Init() tea.Cmd {
 
 // Update handles messages
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// Early return if quitting to prevent processing any messages
+	if m.quitting {
+		return m, nil
+	}
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		return m.handleKeyPress(msg)
 	case tickMsg:
-		// Don't process tick messages if we're quitting
-		if m.quitting {
-			return m, nil
-		}
 		return m.handleTick()
 	}
 	return m, nil
@@ -138,16 +140,19 @@ func (m Model) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.gridRingBuffer.AddRow(m.ca.GetCurrentRow())
 
 	case "+", "=": // Increase refresh rate (make it faster)
-		newRate := m.refreshRate / 2
-		if newRate >= MinRefreshRate {
-			m.refreshRate = newRate
-		} else {
-			m.refreshRate = MinRefreshRate
-		}
+		m.refreshRate = max(m.refreshRate/2, MinRefreshRate)
 
 	case "-", "_": // Decrease refresh rate (make it slower)
 		m.refreshRate = m.refreshRate * 2
 	}
+
+	// Continue with normal tick command unless quitting
+	if !m.quitting {
+		return m, tea.Tick(m.refreshRate, func(t time.Time) tea.Msg {
+			return tickMsg(t)
+		})
+	}
+
 	return m, nil
 }
 
@@ -171,14 +176,10 @@ func (m Model) handleTick() (tea.Model, tea.Cmd) {
 		}
 	}
 
-	// Only create new tick if we're not quitting
-	if !m.quitting {
-		return m, tea.Tick(m.refreshRate, func(t time.Time) tea.Msg {
-			return tickMsg(t)
-		})
-	}
-
-	return m, nil
+	// Continue ticking only if not quitting
+	return m, tea.Tick(m.refreshRate, func(t time.Time) tea.Msg {
+		return tickMsg(t)
+	})
 }
 
 // View renders the current state
@@ -213,7 +214,7 @@ func (m Model) RenderMode() string {
 	return m.statusBuilder.String()
 }
 
-// RenderGrid renders the grid using the optimized ring buffer with performance optimizations
+// RenderGrid renders the grid using the optimized ring buffer
 func (m Model) RenderGrid() string {
 	m.gridBuilder.Reset()
 	rows := m.gridRingBuffer.GetRows()
@@ -225,8 +226,7 @@ func (m Model) RenderGrid() string {
 	aliveStr := m.renderOptions.aliveStyled
 	deadStr := m.renderOptions.deadStyled
 
-	// Render all rows efficiently with minimal allocations
-	lastRowIndex := len(rows) - 1
+	// Render all rows efficiently
 	for i, row := range rows {
 		if row == nil {
 			continue // Skip nil rows
@@ -234,7 +234,7 @@ func (m Model) RenderGrid() string {
 
 		m.gridBuilder.WriteString("  ")
 
-		// Render cells in the row with optimized string operations
+		// Render cells in the row
 		for _, cell := range row {
 			if cell {
 				m.gridBuilder.WriteString(aliveStr)
@@ -244,7 +244,7 @@ func (m Model) RenderGrid() string {
 		}
 
 		// Add newline except for the last row
-		if i < lastRowIndex {
+		if i < len(rows)-1 {
 			m.gridBuilder.WriteByte('\n')
 		}
 	}

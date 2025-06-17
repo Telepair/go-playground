@@ -94,7 +94,6 @@ go-playground/
 
 Interesting projects that may be added in the future:
 
-- 🎮 **Game of Life** - Conway's Game of Life implementation
 - 🧮 **Mandelbrot Set** - Mandelbrot set visualization
 - 🎵 **Audio Visualizer** - Audio spectrum visualization
 - 🌊 **Wave Function Collapse** - Wave Function Collapse algorithm

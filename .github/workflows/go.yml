@@ -7,8 +7,8 @@ on:
     branches: [main, dev]
 
 jobs:
-  cellular-automaton:
-    name: Cellular Automaton
+  build-and-test:
+    name: Build and Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -45,50 +45,7 @@ jobs:
             ${{ runner.os }}-build-${{ matrix.go-version }}-
 
       - name: Build
-        run: make build-cellular-automaton
+        run: make build-all
 
       - name: Test
-        run: make test-cellular-automaton
-
-  conway-game-of-life:
-    name: Conway Game of Life
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: ["1.24"]
-      fail-fast: false
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.go-version }}
-
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.go-version }}-
-            ${{ runner.os }}-go-
-
-      - name: Cache build artifacts
-        uses: actions/cache@v4
-        with:
-          path: bin/
-          key: ${{ runner.os }}-build-${{ matrix.go-version }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ matrix.go-version }}-
-
-      - name: Build
-        run: make build-conway-game-of-life
-
-      - name: Test
-        run: make test-conway-game-of-life
+        run: make test

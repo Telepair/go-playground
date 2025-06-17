@@ -94,7 +94,6 @@ go-playground/
 
 未来可能会添加的有趣项目：
 
-- 🎮 **生命游戏 (Game of Life)** - 康威生命游戏实现
 - 🧮 **曼德博集合 (Mandelbrot Set)** - 曼德博集合可视化
 - 🎵 **音频可视化器 (Audio Visualizer)** - 音频频谱可视化
 - 🌊 **波函数坍缩 (Wave Function Collapse)** - 波函数坍缩算法

@@ -31,7 +31,7 @@ func TestNewGameOfLife(t *testing.T) {
 			cols:     20,
 			boundary: BoundaryPeriodic,
 			pattern:  PatternRandom,
-			wantRows: defaultRows,
+			wantRows: DefaultWindowRows,
 			wantCols: 20,
 		},
 		{
@@ -41,7 +41,7 @@ func TestNewGameOfLife(t *testing.T) {
 			boundary: BoundaryPeriodic,
 			pattern:  PatternRandom,
 			wantRows: 10,
-			wantCols: defaultCols,
+			wantCols: DefaultWindowCols,
 		},
 		{
 			name:     "Negative dimensions use defaults",
@@ -49,8 +49,8 @@ func TestNewGameOfLife(t *testing.T) {
 			cols:     -10,
 			boundary: BoundaryFixed,
 			pattern:  PatternGlider,
-			wantRows: defaultRows,
-			wantCols: defaultCols,
+			wantRows: DefaultWindowRows,
+			wantCols: DefaultWindowCols,
 		},
 	}
 
@@ -360,7 +360,7 @@ func TestPatternInitialization(t *testing.T) {
 	}
 
 	for _, pattern := range patterns {
-		t.Run(pattern.String(), func(t *testing.T) {
+		t.Run(pattern.ToString(DefaultLanguage), func(t *testing.T) {
 			game := NewGameOfLife(20, 40, BoundaryPeriodic, pattern)
 
 			// Check that some cells are alive (except for potentially empty patterns)
@@ -380,7 +380,7 @@ func TestPatternInitialization(t *testing.T) {
 			// Most patterns should have at least one alive cell
 			// (Random pattern might rarely be all dead, but that's extremely unlikely)
 			if !hasAliveCell && pattern != PatternRandom {
-				t.Errorf("Pattern %s has no alive cells", pattern.String())
+				t.Errorf("Pattern %s has no alive cells", pattern.ToString(DefaultLanguage))
 			}
 		})
 	}
@@ -456,7 +456,7 @@ func BenchmarkPatternInitialization(b *testing.B) {
 	}
 
 	for _, pattern := range patterns {
-		b.Run(pattern.String(), func(b *testing.B) {
+		b.Run(pattern.ToString(DefaultLanguage), func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				game := NewGameOfLife(30, 60, BoundaryPeriodic, pattern)

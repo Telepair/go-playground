@@ -3,6 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"net/http"
+	_ "net/http/pprof" //nolint:gosec
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -29,38 +32,31 @@ func main() {
 	var deadColor = flag.String("dead-color", DefaultDeadColor, "Dead cell color (hex)")
 	var aliveChar = flag.String("alive-char", DefaultAliveChar, "Alive cell character")
 	var deadChar = flag.String("dead-char", DefaultDeadChar, "Dead cell character")
-	var lang = flag.String("lang", DefaultLanguage, "Language (en/cn)")
+	var lang = flag.String("lang", DefaultLanguage.ToString(DefaultLanguage), "Language (en/cn)")
+	var enableProfiling = flag.Bool("profile", false, "Enable profiling and monitoring")
+	var profilePort = flag.String("profile-port", ":6060", "Profiling server port")
 
 	flag.Parse()
 
+	// Initialize monitoring if enabled
+	if *enableProfiling {
+		go func() {
+			log.Printf("Starting pprof server on http://localhost%s/debug/pprof/", *profilePort)
+			log.Println(http.ListenAndServe(*profilePort, nil)) //nolint:gosec
+		}()
+	}
+
 	// Create and configure application
-	config := NewConfig()
-	var errors []error
-
+	config := Config{
+		Rows:       *rows,
+		Cols:       *cols,
+		AliveColor: *aliveColor,
+		DeadColor:  *deadColor,
+		AliveChar:  *aliveChar,
+		DeadChar:   *deadChar,
+	}
 	config.SetLanguage(*lang)
-
-	if err := config.SetRows(*rows); err != nil {
-		errors = append(errors, err)
-	}
-
-	if err := config.SetCols(*cols); err != nil {
-		errors = append(errors, err)
-	}
-
-	config.AliveColor = *aliveColor
-	config.DeadColor = *deadColor
-	config.AliveChar = *aliveChar
-	config.DeadChar = *deadChar
-
-	// Validate colors
-	if err := config.ValidateColors(); err != nil {
-		errors = append(errors, err)
-	}
-
-	// Log configuration errors if any (they've been logged already but we count them)
-	if len(errors) > 0 {
-		configLogger.Printf("Configuration completed with %d warnings", len(errors))
-	}
+	config.Check()
 
 	// Create initial model
 	initialModel := NewModel(config)

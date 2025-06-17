@@ -5,10 +5,7 @@ import (
 	"time"
 )
 
-var (
-	defaultRows = 30
-	defaultCols = 60
-)
+// Use constants from config.go instead of separate variables
 
 // GameOfLife represents Conway's Game of Life
 type GameOfLife struct {
@@ -24,10 +21,10 @@ type GameOfLife struct {
 // NewGameOfLife creates a new Game of Life instance
 func NewGameOfLife(rows, cols int, boundary BoundaryType, pattern Pattern) *GameOfLife {
 	if rows <= 0 {
-		rows = defaultRows
+		rows = DefaultWindowRows
 	}
 	if cols <= 0 {
-		cols = defaultCols
+		cols = DefaultWindowCols
 	}
 
 	game := &GameOfLife{
@@ -82,9 +79,11 @@ func (g *GameOfLife) setRandomPattern() {
 	// #nosec G404 - Using math/rand for game simulation, not cryptography
 	rng := rand.New(rand.NewPCG(seed, seed))
 
+	// Optimized random generation - use Uint32 for better performance
 	for i := range g.rows {
 		for j := range g.cols {
-			g.currentGrid[i][j] = rng.Float32() < 0.3 // 30% probability of being alive
+			// Use bit manipulation for 30% probability (faster than float comparison)
+			g.currentGrid[i][j] = rng.Uint32()%10 < 3 // 30% probability of being alive
 		}
 	}
 }
@@ -238,37 +237,36 @@ func (g *GameOfLife) clearGrid() {
 }
 
 // countNeighbors counts the number of living neighbors for a cell
+// Optimized version with direct neighbor checking
 func (g *GameOfLife) countNeighbors(row, col int) int {
 	count := 0
 
-	// Check all 8 neighbors
-	for dr := -1; dr <= 1; dr++ {
-		for dc := -1; dc <= 1; dc++ {
-			if dr == 0 && dc == 0 {
-				continue // Skip the cell itself
-			}
+	// Define neighbor offsets for direct access
+	neighbors := [8][2]int{
+		{-1, -1}, {-1, 0}, {-1, 1},
+		{0, -1}, {0, 1},
+		{1, -1}, {1, 0}, {1, 1},
+	}
 
-			neighborRow := row + dr
-			neighborCol := col + dc
+	for _, offset := range neighbors {
+		neighborRow := row + offset[0]
+		neighborCol := col + offset[1]
 
-			// Handle boundary conditions
-			if g.boundary == BoundaryPeriodic {
-				// Wrap around for periodic boundary
-				neighborRow = (neighborRow + g.rows) % g.rows
-				neighborCol = (neighborCol + g.cols) % g.cols
-			} else if g.boundary == BoundaryFixed {
-				// Out of bounds cells are considered dead for fixed boundary
-				if neighborRow < 0 || neighborRow >= g.rows || neighborCol < 0 || neighborCol >= g.cols {
-					continue
-				}
+		// Handle boundary conditions
+		if g.boundary == BoundaryPeriodic {
+			// Wrap around for periodic boundary
+			neighborRow = (neighborRow + g.rows) % g.rows
+			neighborCol = (neighborCol + g.cols) % g.cols
+		} else {
+			// Fixed boundary: skip out-of-bounds cells
+			if neighborRow < 0 || neighborRow >= g.rows || neighborCol < 0 || neighborCol >= g.cols {
+				continue
 			}
+		}
 
-			// Count living neighbors
-			if neighborRow >= 0 && neighborRow < g.rows && neighborCol >= 0 && neighborCol < g.cols {
-				if g.currentGrid[neighborRow][neighborCol] {
-					count++
-				}
-			}
+		// Count living neighbors (bounds already checked for periodic)
+		if g.currentGrid[neighborRow][neighborCol] {
+			count++
 		}
 	}
 

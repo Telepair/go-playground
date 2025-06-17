@@ -93,15 +93,23 @@ const (
 	// Colors
 	DefaultAliveColor = "#FFFFFF" // Default alive cell color
 	DefaultDeadColor  = "#000000" // Default dead cell color
-	HeaderBgColor     = "#874BFD" // Header background color
-	HeaderFgColor     = "#FFFFFF" // Header foreground color
 
 	// Characters
-	DefaultAliveChar   = "█" // Default alive cell character
-	DefaultDeadChar    = " " // Default dead cell character
-	ProgressFilledChar = "█" // Progress bar filled character
-	ProgressEmptyChar  = "░" // Progress bar empty character
+	DefaultAliveChar = "█" // Default alive cell character
+	DefaultDeadChar  = " " // Default dead cell character
 )
+
+// DefaultConfig is the default configuration
+var DefaultConfig = Config{
+	Rule:       DefaultRule,
+	Rows:       DefaultWindowRows,
+	Cols:       DefaultWindowCols,
+	AliveColor: DefaultAliveColor,
+	DeadColor:  DefaultDeadColor,
+	AliveChar:  DefaultAliveChar,
+	DeadChar:   DefaultDeadChar,
+	Language:   DefaultLanguage,
+}
 
 // Config holds all application configuration
 type Config struct {
@@ -115,17 +123,12 @@ type Config struct {
 	Language   Language
 }
 
-// NewConfig creates a new configuration with default values
-func NewConfig() *Config {
-	return &Config{
-		Rule:       DefaultRule,
-		Rows:       DefaultWindowRows,
-		Cols:       DefaultWindowCols,
-		AliveColor: DefaultAliveColor,
-		DeadColor:  DefaultDeadColor,
-		AliveChar:  DefaultAliveChar,
-		DeadChar:   DefaultDeadChar,
-		Language:   English,
+// SetLang sets the language
+func (c *Config) SetLang(lang string) {
+	if lang == "cn" || lang == "zh" {
+		c.Language = Chinese
+	} else {
+		c.Language = English
 	}
 }
 
@@ -162,15 +165,6 @@ func (c *Config) Check() {
 	if len([]rune(c.DeadChar)) != 1 {
 		fmt.Printf("invalid dead character format: %s, using default\n", c.DeadChar)
 		c.DeadChar = DefaultDeadChar
-	}
-}
-
-// SetLang sets the language
-func (c *Config) SetLang(lang string) {
-	if lang == "cn" || lang == "zh" {
-		c.Language = Chinese
-	} else {
-		c.Language = English
 	}
 }
 

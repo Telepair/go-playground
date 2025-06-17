@@ -1,10 +1,8 @@
 package main
 
-import "fmt"
-
 var (
 	defaultRule = 30
-	defaultCols = 1
+	defaultCols = 80 // Should match DefaultWindowCols for consistency
 )
 
 // CellularAutomaton represents a 1D cellular automaton
@@ -33,38 +31,26 @@ func (ca *CellularAutomaton) computeRuleTable() {
 }
 
 // getNeighbors returns the left and right neighbors for a given cell index
-// This function handles all boundary conditions in one place for clarity
+// Optimized with early returns to reduce branching
 func (ca *CellularAutomaton) getNeighbors(idx int) (left, right bool) {
-	switch ca.boundary {
-	case BoundaryPeriodic:
-		// Periodic boundary: wrap around
+	if ca.boundary == BoundaryPeriodic {
+		// Periodic boundary: wrap around (most efficient case first)
 		leftIdx := (idx - 1 + ca.cols) % ca.cols
 		rightIdx := (idx + 1) % ca.cols
-		left = ca.currentRow[leftIdx]
-		right = ca.currentRow[rightIdx]
+		return ca.currentRow[leftIdx], ca.currentRow[rightIdx]
+	}
 
-	case BoundaryFixed:
-		// Fixed boundary: use false (0) for boundary cells
-		if idx > 0 {
-			left = ca.currentRow[idx-1]
-		}
-		if idx < ca.cols-1 {
-			right = ca.currentRow[idx+1]
-		}
+	// Calculate neighbors for fixed and reflective boundaries
+	if idx > 0 {
+		left = ca.currentRow[idx-1]
+	} else if ca.boundary == BoundaryReflect {
+		left = ca.currentRow[idx] // Reflect itself
+	}
 
-	case BoundaryReflect:
-		// Reflective boundary: boundary cells reflect themselves
-		if idx == 0 {
-			left = ca.currentRow[idx] // Reflect itself
-		} else {
-			left = ca.currentRow[idx-1]
-		}
-
-		if idx == ca.cols-1 {
-			right = ca.currentRow[idx] // Reflect itself
-		} else {
-			right = ca.currentRow[idx+1]
-		}
+	if idx < ca.cols-1 {
+		right = ca.currentRow[idx+1]
+	} else if ca.boundary == BoundaryReflect {
+		right = ca.currentRow[idx] // Reflect itself
 	}
 
 	return left, right
@@ -123,14 +109,14 @@ func (ca *CellularAutomaton) GetGeneration() int {
 
 // Reset resets the cellular automaton to its initial state
 func (ca *CellularAutomaton) Reset(rule, cols int, boundary BoundaryType) {
+	// Input validation with defaults
 	if cols <= 0 {
-		fmt.Printf("cols <= 0, using default cols: %d\n", defaultCols)
 		cols = defaultCols
 	}
 	if rule < 0 || rule > 255 {
-		fmt.Printf("rule < 0 || rule > 255, using default rule: %d\n", defaultRule)
 		rule = defaultRule
 	}
+
 	ca.rule = rule
 	ca.cols = cols
 	ca.boundary = boundary
@@ -138,5 +124,7 @@ func (ca *CellularAutomaton) Reset(rule, cols int, boundary BoundaryType) {
 	ca.nextRow = make([]bool, ca.cols)
 	ca.generation = 0
 	ca.computeRuleTable()
+
+	// Initialize with center cell alive
 	ca.currentRow[ca.cols/2] = true
 }

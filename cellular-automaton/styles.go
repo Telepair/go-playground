@@ -90,10 +90,10 @@ const (
 	BoundaryLabelCN = "边界"
 	BoundaryLabelEN = "Boundary"
 
-	PausedLabelCN = "状态"
-	PausedLabelEN = "Status"
+	StatusLabelCN = "状态"
+	StatusLabelEN = "Status"
 	PlayingIcon   = "▶️"
-	PlayingCN     = "运行"
+	PlayingCN     = "运行中"
 	PlayingEN     = "Running"
 	PausedIcon    = "⏸️"
 	PausedEN      = "Paused"
@@ -127,17 +127,13 @@ const (
 
 // RenderOptions contains rendering configuration with cached styles
 type RenderOptions struct {
-	aliveStyled string         // Cached styled alive cell
-	deadStyled  string         // Cached styled dead cell
-	aliveStyle  lipgloss.Style // Cached alive style
-	deadStyle   lipgloss.Style // Cached dead style
+	aliveStyled string // Cached styled alive cell
+	deadStyled  string // Cached styled dead cell
 }
 
 // NewRenderOptions creates optimized render options with pre-computed styles
 func NewRenderOptions(aliveColor, deadColor, aliveChar, deadChar string) RenderOptions {
 	return RenderOptions{
-		aliveStyle:  lipgloss.NewStyle().Foreground(lipgloss.Color(aliveColor)),
-		deadStyle:   lipgloss.NewStyle().Foreground(lipgloss.Color(deadColor)),
 		aliveStyled: lipgloss.NewStyle().Foreground(lipgloss.Color(aliveColor)).Render(aliveChar),
 		deadStyled:  lipgloss.NewStyle().Foreground(lipgloss.Color(deadColor)).Render(deadChar),
 	}
@@ -165,9 +161,11 @@ func GetHeaderLine(language Language) string {
 func GetStatusLine(language Language, rule int, generation int, speed time.Duration, rows, cols int, boundary BoundaryType, paused bool) string {
 	style := statusTableStyle.Inherit(tableStyle)
 	if language == Chinese {
-		pausedStatus := PlayingCN
+		status := PlayingCN
+		statusIcon := PlayingIcon
 		if paused {
-			pausedStatus = PausedCN
+			status = PausedCN
+			statusIcon = PausedIcon
 		}
 		tableContent := lipgloss.JoinVertical(lipgloss.Left,
 			lipgloss.JoinHorizontal(lipgloss.Top,
@@ -178,15 +176,17 @@ func GetStatusLine(language Language, rule int, generation int, speed time.Durat
 			lipgloss.JoinHorizontal(lipgloss.Top,
 				formatStatus(BoundaryIcon, BoundaryLabelCN, boundary.ToString(language)),
 				formatStatus(SizeIcon, SizeLabelCN, fmt.Sprintf("%d×%d", rows, cols)),
-				formatStatus(PausedIcon, PausedLabelCN, pausedStatus),
+				formatStatus(statusIcon, StatusLabelCN, status),
 			),
 		)
 		return style.Render(tableContent)
 	}
 
-	pausedStatus := PlayingEN
+	status := PlayingEN
+	statusIcon := PlayingIcon
 	if paused {
-		pausedStatus = PausedEN
+		status = PausedEN
+		statusIcon = PausedIcon
 	}
 
 	tableContent := lipgloss.JoinVertical(lipgloss.Left,
@@ -198,7 +198,7 @@ func GetStatusLine(language Language, rule int, generation int, speed time.Durat
 		lipgloss.JoinHorizontal(lipgloss.Top,
 			formatStatus(BoundaryIcon, BoundaryLabelEN, boundary.ToString(language)),
 			formatStatus(SizeIcon, SizeLabelEN, fmt.Sprintf("%d×%d", rows, cols)),
-			formatStatus(PausedIcon, PausedLabelEN, pausedStatus),
+			formatStatus(statusIcon, StatusLabelEN, status),
 		),
 	)
 	return style.Render(tableContent)
