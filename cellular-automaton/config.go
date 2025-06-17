@@ -71,11 +71,10 @@ func (l Language) ToString(language Language) string {
 
 // Application constants
 const (
-	// Grid and display constants
-	DefaultWindowRows = 30 // Default window rows
-	DefaultWindowCols = 80 // Default window columns
-	MinWindowRows     = 10 // Minimum window rows
-	MinWindowCols     = 20 // Minimum window columns
+	DefaultRows = 30 // Default window rows
+	DefaultCols = 80 // Default window columns
+	MinRows     = 10 // Minimum window rows
+	MinCols     = 20 // Minimum window columns
 
 	// Rule validation
 	DefaultRule = 30  // Default cellular automaton rule
@@ -84,7 +83,7 @@ const (
 
 	// Timing constants
 	DefaultRefreshRate = 200 * time.Millisecond // Default refresh rate in milliseconds
-	MinRefreshRate     = 1 * time.Millisecond   // Minimum refresh rate in milliseconds
+	MinRefreshRate     = 10 * time.Millisecond  // Minimum refresh rate in milliseconds
 
 	// Default values
 	DefaultLanguage = English          // Default language
@@ -97,13 +96,16 @@ const (
 	// Characters
 	DefaultAliveChar = "█" // Default alive cell character
 	DefaultDeadChar  = " " // Default dead cell character
+
+	// Default values
+	DefaultLogFile         = "debug.log"     // Default log file path
+	DefaultProfileInterval = 5 * time.Second // Default profile information output interval
+	DefaultProfilePort     = 6060            // Default profile server port
 )
 
 // DefaultConfig is the default configuration
 var DefaultConfig = Config{
 	Rule:       DefaultRule,
-	Rows:       DefaultWindowRows,
-	Cols:       DefaultWindowCols,
 	AliveColor: DefaultAliveColor,
 	DeadColor:  DefaultDeadColor,
 	AliveChar:  DefaultAliveChar,
@@ -114,8 +116,6 @@ var DefaultConfig = Config{
 // Config holds all application configuration
 type Config struct {
 	Rule       int
-	Rows       int
-	Cols       int
 	AliveColor string
 	DeadColor  string
 	AliveChar  string
@@ -138,14 +138,7 @@ func (c *Config) Check() {
 		fmt.Printf("invalid rule %d, must be between %d and %d, using default rule %d\n", c.Rule, MinRule, MaxRule, DefaultRule)
 		c.Rule = DefaultRule
 	}
-	if c.Rows < MinWindowRows {
-		fmt.Printf("invalid number of rows %d, must be at least %d, using default number of rows %d\n", c.Rows, MinWindowRows, DefaultWindowRows)
-		c.Rows = DefaultWindowRows
-	}
-	if c.Cols < MinWindowCols {
-		fmt.Printf("invalid number of columns %d, must be at least %d, using default number of columns %d\n", c.Cols, MinWindowCols, DefaultWindowCols)
-		c.Cols = DefaultWindowCols
-	}
+
 	if c.Language != English && c.Language != Chinese {
 		fmt.Printf("invalid language %s, must be en or cn, using default language %s\n", c.Language.ToString(c.Language), DefaultLanguage.ToString(c.Language))
 		c.Language = DefaultLanguage

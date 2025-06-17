@@ -14,7 +14,7 @@ _[English Version / 英文版本](README.md)_
 
 **演示:**
 
-[![asciicast](https://asciinema.org/a/723358.svg)](https://asciinema.org/a/723358)
+[![asciicast](https://asciinema.org/a/723518.svg)](https://asciinema.org/a/723518)
 
 ### 🎮 [康威生命游戏 (Conway's Game of Life)](./conway-game-of-life/)
 

@@ -14,11 +14,11 @@ type GridRingBuffer struct {
 // NewGridRingBuffer creates a new ring buffer for grid history with validation
 func NewGridRingBuffer(capacity, cols int) *GridRingBuffer {
 	// Ensure minimum valid values
-	if capacity < 1 {
-		capacity = 1
+	if capacity < MinRows {
+		capacity = DefaultRows
 	}
-	if cols < 1 {
-		cols = 1
+	if cols < MinCols {
+		cols = DefaultCols
 	}
 
 	// Pre-allocate all buffer rows to avoid allocations during runtime

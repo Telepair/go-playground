@@ -1,9 +1,6 @@
 package main
 
-var (
-	defaultRule = 30
-	defaultCols = 80 // Should match DefaultWindowCols for consistency
-)
+import "log/slog"
 
 // CellularAutomaton represents a 1D cellular automaton
 type CellularAutomaton struct {
@@ -18,6 +15,7 @@ type CellularAutomaton struct {
 
 // NewCellularAutomaton creates a new cellular automaton instance
 func NewCellularAutomaton(rule, cols int, boundary BoundaryType) *CellularAutomaton {
+	slog.Debug("NewCellularAutomaton", "rule", rule, "cols", cols, "boundary", boundary)
 	ca := &CellularAutomaton{}
 	ca.Reset(rule, cols, boundary)
 	return ca
@@ -31,29 +29,40 @@ func (ca *CellularAutomaton) computeRuleTable() {
 }
 
 // getNeighbors returns the left and right neighbors for a given cell index
-// Optimized with early returns to reduce branching
+// Optimized with pre-computed indices to reduce branching
 func (ca *CellularAutomaton) getNeighbors(idx int) (left, right bool) {
-	if ca.boundary == BoundaryPeriodic {
+	// Input validation to prevent index out of bounds
+	if idx < 0 || idx >= ca.cols || ca.currentRow == nil {
+		return false, false
+	}
+
+	switch ca.boundary {
+	case BoundaryPeriodic:
 		// Periodic boundary: wrap around (most efficient case first)
 		leftIdx := (idx - 1 + ca.cols) % ca.cols
 		rightIdx := (idx + 1) % ca.cols
 		return ca.currentRow[leftIdx], ca.currentRow[rightIdx]
-	}
 
-	// Calculate neighbors for fixed and reflective boundaries
-	if idx > 0 {
-		left = ca.currentRow[idx-1]
-	} else if ca.boundary == BoundaryReflect {
-		left = ca.currentRow[idx] // Reflect itself
-	}
+	case BoundaryReflect:
+		// Reflective boundary: reflect edge cells themselves
+		leftIdx := idx - 1
+		if leftIdx < 0 {
+			leftIdx = 0 // Reflect the first cell (itself)
+		}
 
-	if idx < ca.cols-1 {
-		right = ca.currentRow[idx+1]
-	} else if ca.boundary == BoundaryReflect {
-		right = ca.currentRow[idx] // Reflect itself
-	}
+		rightIdx := idx + 1
+		if rightIdx >= ca.cols {
+			rightIdx = ca.cols - 1 // Reflect the last cell (itself)
+		}
 
-	return left, right
+		return ca.currentRow[leftIdx], ca.currentRow[rightIdx]
+
+	default: // BoundaryFixed
+		// Fixed boundary: return false for out-of-bounds
+		left = idx > 0 && ca.currentRow[idx-1]
+		right = idx < ca.cols-1 && ca.currentRow[idx+1]
+		return left, right
+	}
 }
 
 // getRuleBit returns the next state for a cell based on its neighborhood
@@ -67,16 +76,16 @@ func (ca *CellularAutomaton) getRuleBit(idx int) bool {
 	left, right := ca.getNeighbors(idx)
 	center := ca.currentRow[idx]
 
-	// Convert boolean triplet to integer pattern (000 to 111)
+	// Convert boolean triplet to integer pattern (000 to 111) using bit operations
 	pattern := 0
 	if left {
-		pattern += 4 // Left bit (most significant)
+		pattern |= 4 // Left bit (most significant)
 	}
 	if center {
-		pattern += 2 // Center bit
+		pattern |= 2 // Center bit
 	}
 	if right {
-		pattern++ // Right bit (least significant)
+		pattern |= 1 // Right bit (least significant)
 	}
 
 	// Use pre-computed rule table for better performance
@@ -109,12 +118,13 @@ func (ca *CellularAutomaton) GetGeneration() int {
 
 // Reset resets the cellular automaton to its initial state
 func (ca *CellularAutomaton) Reset(rule, cols int, boundary BoundaryType) {
+	slog.Debug("CellularAutomaton Reset", "rule", rule, "cols", cols, "boundary", boundary)
 	// Input validation with defaults
-	if cols <= 0 {
-		cols = defaultCols
+	if cols <= MinCols {
+		cols = DefaultCols
 	}
-	if rule < 0 || rule > 255 {
-		rule = defaultRule
+	if rule < MinRule || rule > MaxRule {
+		rule = DefaultRule
 	}
 
 	ca.rule = rule

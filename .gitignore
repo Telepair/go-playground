@@ -37,3 +37,6 @@ bin/
 
 # Asciinema
 *.cast
+
+# Log files
+*.log
