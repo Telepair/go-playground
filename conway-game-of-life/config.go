@@ -123,10 +123,10 @@ func (p Pattern) ToString(language Language) string {
 // Application constants
 const (
 	// Grid and display constants
-	DefaultWindowRows = 24 // Default window rows
-	DefaultWindowCols = 90 // Default window columns
-	MinWindowRows     = 10 // Minimum window rows
-	MinWindowCols     = 20 // Minimum window columns
+	DefaultRows = 30 // Default window rows
+	DefaultCols = 80 // Default window columns
+	MinRows     = 10 // Minimum window rows
+	MinCols     = 20 // Minimum window columns
 
 	DefaultLanguage    = English               // Default language
 	DefaultRefreshRate = 50 * time.Millisecond // Default refresh rate in milliseconds
@@ -141,12 +141,15 @@ const (
 	// Characters
 	DefaultAliveChar = "█" // Default alive cell character
 	DefaultDeadChar  = " " // Default dead cell character
+
+	// Default values
+	DefaultLogFile         = "debug.log"     // Default log file path
+	DefaultProfileInterval = 5 * time.Second // Default profile information output interval
+	DefaultProfilePort     = 6060            // Default profile server port
 )
 
 // DefaultConfig is the default configuration
 var DefaultConfig = Config{
-	Rows:       DefaultWindowRows,
-	Cols:       DefaultWindowCols,
 	AliveColor: DefaultAliveColor,
 	DeadColor:  DefaultDeadColor,
 	AliveChar:  DefaultAliveChar,
@@ -156,8 +159,6 @@ var DefaultConfig = Config{
 
 // Config holds all application configuration
 type Config struct {
-	Rows       int
-	Cols       int
 	AliveColor string
 	DeadColor  string
 	AliveChar  string
@@ -177,14 +178,6 @@ func (c *Config) SetLanguage(lang string) {
 
 // Check validates the configuration
 func (c *Config) Check() {
-	if c.Rows < MinWindowRows {
-		fmt.Printf("invalid number of rows %d, must be at least %d, using default number of rows %d\n", c.Rows, MinWindowRows, DefaultWindowRows)
-		c.Rows = DefaultWindowRows
-	}
-	if c.Cols < MinWindowCols {
-		fmt.Printf("invalid number of columns %d, must be at least %d, using default number of columns %d\n", c.Cols, MinWindowCols, DefaultWindowCols)
-		c.Cols = DefaultWindowCols
-	}
 	if !isValidHexColor(c.AliveColor) {
 		fmt.Printf("invalid alive color format: %s, using default\n", c.AliveColor)
 		c.AliveColor = DefaultAliveColor

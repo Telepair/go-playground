@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log/slog"
 	"math/rand/v2"
 	"time"
 )
@@ -20,32 +21,15 @@ type GameOfLife struct {
 
 // NewGameOfLife creates a new Game of Life instance
 func NewGameOfLife(rows, cols int, boundary BoundaryType, pattern Pattern) *GameOfLife {
-	if rows <= 0 {
-		rows = DefaultWindowRows
-	}
-	if cols <= 0 {
-		cols = DefaultWindowCols
-	}
-
+	slog.Debug("NewGameOfLife", "rows", rows, "cols", cols, "boundary", boundary, "pattern", pattern)
 	game := &GameOfLife{
 		rows:       rows,
 		cols:       cols,
-		generation: 0,
 		boundary:   boundary,
 		pattern:    pattern,
+		generation: 0,
 	}
-
-	// Initialize grids
-	game.currentGrid = make([][]bool, rows)
-	game.nextGrid = make([][]bool, rows)
-	for i := range rows {
-		game.currentGrid[i] = make([]bool, cols)
-		game.nextGrid[i] = make([]bool, cols)
-	}
-
-	// Set initial pattern
-	game.setInitialPattern()
-
+	game.Init()
 	return game
 }
 
@@ -239,6 +223,11 @@ func (g *GameOfLife) clearGrid() {
 // countNeighbors counts the number of living neighbors for a cell
 // Optimized version with direct neighbor checking
 func (g *GameOfLife) countNeighbors(row, col int) int {
+	// Input validation to prevent index out of bounds
+	if row < 0 || row >= g.rows || col < 0 || col >= g.cols || g.currentGrid == nil {
+		return 0
+	}
+
 	count := 0
 
 	// Define neighbor offsets for direct access
@@ -257,16 +246,22 @@ func (g *GameOfLife) countNeighbors(row, col int) int {
 			// Wrap around for periodic boundary
 			neighborRow = (neighborRow + g.rows) % g.rows
 			neighborCol = (neighborCol + g.cols) % g.cols
+
+			// Additional bounds check for safety after modulo operation
+			if neighborRow >= 0 && neighborRow < g.rows &&
+				neighborCol >= 0 && neighborCol < g.cols {
+				if g.currentGrid[neighborRow][neighborCol] {
+					count++
+				}
+			}
 		} else {
 			// Fixed boundary: skip out-of-bounds cells
-			if neighborRow < 0 || neighborRow >= g.rows || neighborCol < 0 || neighborCol >= g.cols {
-				continue
+			if neighborRow >= 0 && neighborRow < g.rows &&
+				neighborCol >= 0 && neighborCol < g.cols {
+				if g.currentGrid[neighborRow][neighborCol] {
+					count++
+				}
 			}
-		}
-
-		// Count living neighbors (bounds already checked for periodic)
-		if g.currentGrid[neighborRow][neighborCol] {
-			count++
 		}
 	}
 
@@ -313,22 +308,33 @@ func (g *GameOfLife) GetGeneration() int {
 	return g.generation
 }
 
-// Reset resets the game to its initial state
-func (g *GameOfLife) Reset() {
-	// Clear both grids
-	for i := range g.rows {
-		for j := range g.cols {
-			g.currentGrid[i][j] = false
-			g.nextGrid[i][j] = false
-		}
+// Init initializes the game of life
+func (g *GameOfLife) Init() {
+	slog.Debug("GameOfLife Init", "rows", g.rows, "cols", g.cols, "boundary", g.boundary, "pattern", g.pattern)
+	if g.rows <= MinRows {
+		slog.Warn("GameOfLife rows is less than MinRows, using default rows", "rows", g.rows, "minRows", MinRows, "defaultRows", DefaultRows)
+		g.rows = DefaultRows
 	}
-
-	g.generation = 0
+	if g.cols <= MinCols {
+		slog.Warn("GameOfLife cols is less than MinCols, using default cols", "cols", g.cols, "minCols", MinCols, "defaultCols", DefaultCols)
+		g.cols = DefaultCols
+	}
+	g.currentGrid = make([][]bool, g.rows)
+	g.nextGrid = make([][]bool, g.rows)
+	for i := range g.rows {
+		g.currentGrid[i] = make([]bool, g.cols)
+		g.nextGrid[i] = make([]bool, g.cols)
+	}
 	g.setInitialPattern()
 }
 
-// SetPattern updates the pattern and resets the game
-func (g *GameOfLife) SetPattern(pattern Pattern) {
+// Reset resets the game to its initial state
+func (g *GameOfLife) Reset(rows, cols int, boundary BoundaryType, pattern Pattern) {
+	slog.Debug("GameOfLife Reset", "rows", rows, "cols", cols, "boundary", boundary, "pattern", pattern)
+	g.rows = rows
+	g.cols = cols
+	g.boundary = boundary
 	g.pattern = pattern
-	g.Reset()
+	g.generation = 0
+	g.Init()
 }

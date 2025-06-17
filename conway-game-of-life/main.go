@@ -1,14 +1,15 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
-	"log"
-	"net/http"
+	"log/slog"
 	_ "net/http/pprof" //nolint:gosec
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/telepair/go-playground/pkg"
 )
 
 func main() {
@@ -26,30 +27,34 @@ func main() {
 	}
 
 	// Parse command line flags
-	var rows = flag.Int("rows", DefaultWindowRows, "Number of rows in the grid")
-	var cols = flag.Int("cols", DefaultWindowCols, "Number of columns in the grid")
 	var aliveColor = flag.String("alive-color", DefaultAliveColor, "Alive cell color (hex)")
 	var deadColor = flag.String("dead-color", DefaultDeadColor, "Dead cell color (hex)")
 	var aliveChar = flag.String("alive-char", DefaultAliveChar, "Alive cell character")
 	var deadChar = flag.String("dead-char", DefaultDeadChar, "Dead cell character")
 	var lang = flag.String("lang", DefaultLanguage.ToString(DefaultLanguage), "Language (en/cn)")
 	var enableProfiling = flag.Bool("profile", false, "Enable profiling and monitoring")
-	var profilePort = flag.String("profile-port", ":6060", "Profiling server port")
+	var profilePort = flag.Int("profile-port", DefaultProfilePort, "Profiling server port")
+	var profileInterval = flag.Duration("profile-interval", DefaultProfileInterval, "Profile information output interval")
+	var logFile = flag.String("log-file", DefaultLogFile, "Log file path")
 
 	flag.Parse()
 
+	if *logFile != "" {
+		_ = pkg.InitLog("debug", "text", *logFile)
+	}
+	slog.Debug("Conway's Game of Life starting")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Initialize monitoring if enabled
 	if *enableProfiling {
-		go func() {
-			log.Printf("Starting pprof server on http://localhost%s/debug/pprof/", *profilePort)
-			log.Println(http.ListenAndServe(*profilePort, nil)) //nolint:gosec
-		}()
+		go pkg.StartProfile(ctx, *profilePort)
+		go pkg.StartWatchdog(ctx, *profileInterval)
 	}
 
 	// Create and configure application
 	config := Config{
-		Rows:       *rows,
-		Cols:       *cols,
 		AliveColor: *aliveColor,
 		DeadColor:  *deadColor,
 		AliveChar:  *aliveChar,
@@ -67,4 +72,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error running program: %v\n", err)
 		os.Exit(1)
 	}
+
+	slog.Debug("Conway's Game of Life finished")
 }

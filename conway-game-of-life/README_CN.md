@@ -6,7 +6,7 @@ _[English Version / 英文版本](README.md)_
 
 一个具有多种预定义模式和高度可定制渲染选项的康威生命游戏终端用户界面(TUI)实现。
 
-[![asciicast](https://asciinema.org/a/723376.svg)](https://asciinema.org/a/723376)
+[![asciicast](https://asciinema.org/a/723524.svg)](https://asciinema.org/a/723524)
 
 ## 功能特性
 

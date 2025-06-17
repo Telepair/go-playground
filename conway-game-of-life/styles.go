@@ -2,15 +2,9 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-)
-
-// UI layout constants for consistent alignment
-const (
-	PanelWidth     = 90 // Standard width for all UI panels
-	TableCellWidth = 28 // Each cell takes 1/3 of panel width (90/3 ≈ 30, minus padding)
 )
 
 // Enhanced UI styles for better visual appearance
@@ -22,106 +16,65 @@ var (
 			Background(lipgloss.Color("#874BFD")).
 			Padding(0, 2).
 			MarginBottom(1).
-			Align(lipgloss.Center).
-			Width(PanelWidth)
+			Align(lipgloss.Center)
 
-	controlKeyStyle = lipgloss.NewStyle().
+	labelStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#FFFFFF")).
 			Background(lipgloss.Color("#4A5568")).
 			Padding(0, 1).
 			Bold(true)
 
-	// Table styles for metadata display
-	tableStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#4A5568")).
-			Width(PanelWidth).
-			MarginBottom(1)
-
-	statusTableStyle = lipgloss.NewStyle().
-				Background(lipgloss.Color("#2D3748")).
-				Foreground(lipgloss.Color("#FFFFFF")).
-				Padding(1, 2)
-
-	controlTableStyle = lipgloss.NewStyle().
-				Background(lipgloss.Color("#1A202C")).
-				Foreground(lipgloss.Color("#FFFFFF")).
-				Padding(1, 2)
-
-	// Table cell styles
-	tableCellStyle = lipgloss.NewStyle().
-			Width(TableCellWidth).
-			Align(lipgloss.Left).
-			Padding(0, 1)
-
-	tableLabelStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#E2E8F0")).
-			Bold(false)
-
-	tableValueStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#68D391")).
-			Bold(true)
+	tableBuilder strings.Builder
 )
 
 // UI text constants with enhanced formatting and icons
 const (
 	// Header Line
-	HeaderEN = "🎮 Conway's Game of Life 🎮"
 	HeaderCN = "🎮 康威生命游戏 🎮"
+	HeaderEN = "🎮 Conway's Game of Life 🎮"
 
 	// Status Line
-	GenerationIcon    = "⚡"
-	GenerationLabelCN = "代数"
-	GenerationLabelEN = "Gen"
+	GenerationLabelCN = "⚡ 代数: %d"
+	GenerationLabelEN = "⚡ Gen: %d"
 
-	SpeedIcon    = "🔄"
-	SpeedLabelCN = "刷新"
-	SpeedLabelEN = "Speed"
+	SpeedLabelCN = "🔄 刷新: %s"
+	SpeedLabelEN = "🔄 Speed: %s"
 
-	SizeIcon    = "📐"
-	SizeLabelCN = "尺寸"
-	SizeLabelEN = "Size"
+	SizeLabelCN = "📐 尺寸: %d×%d"
+	SizeLabelEN = "📐 Size: %d×%d"
 
-	BoundaryIcon    = "🔒"
-	BoundaryLabelCN = "边界"
-	BoundaryLabelEN = "Boundary"
+	BoundaryLabelCN = "🔒 边界: %s"
+	BoundaryLabelEN = "🔒 Boundary: %s"
 
-	PatternIcon    = "🎨"
-	PatternLabelCN = "模式"
-	PatternLabelEN = "Pattern"
+	PatternLabelCN = "🎨 模式: %s"
+	PatternLabelEN = "🎨 Pattern: %s"
 
-	StatusLabelCN = "状态"
-	StatusLabelEN = "Status"
-	PlayingIcon   = "▶️"
-	PlayingCN     = "运行中"
-	PlayingEN     = "Running"
-	PausedIcon    = "⏸️"
-	PausedEN      = "Paused"
-	PausedCN      = "已暂停"
+	StatusLabelPlayingCN = "▶️ 运行中"
+	StatusLabelPlayingEN = "▶️ Running"
+	StatusLabelPausedCN  = "⏸️ 已暂停"
+	StatusLabelPausedEN  = "⏸️ Paused"
 
-	ResetKey     = "R"
-	ResetLabelCN = "重置"
-	ResetLabelEN = "Reset"
+	// Control Line
+	SelectPatternLabelCN = "P 选择模式"
+	SelectPatternLabelEN = "P Select Pattern"
 
-	SpeedControlKey     = "+/-"
-	SpeedControlLabelCN = "加速/减速"
-	SpeedControlLabelEN = "Speed Up/Down"
+	SelectBoundaryLabelCN = "B 选择边界"
+	SelectBoundaryLabelEN = "B Select Boundary"
 
-	QuitKey     = "Space/Q"
-	QuitLabelCN = "暂停/退出"
-	QuitLabelEN = "Pause/Quit"
+	LanguageLabelCN = "L 切换语言"
+	LanguageLabelEN = "L Switch Language"
 
-	LanguageKey     = "L"
-	LanguageLabelCN = "切换语言"
-	LanguageLabelEN = "Switch Language"
+	SpeedControlLabelCN = "+/- 加速/减速"
+	SpeedControlLabelEN = "+/- Speed Up/Down"
 
-	SelectPatternKey     = "P"
-	SelectPatternLabelCN = "选择模式"
-	SelectPatternLabelEN = "Select Pattern"
+	SpaceControlLabelCN = "Space 暂停"
+	SpaceControlLabelEN = "Space Pause"
 
-	SelectBoundaryKey     = "B"
-	SelectBoundaryLabelCN = "选择边界"
-	SelectBoundaryLabelEN = "Select Boundary"
+	ResetLabelCN = "R 重置"
+	ResetLabelEN = "R Reset"
+
+	QuitLabelCN = "Q 退出"
+	QuitLabelEN = "Q Quit"
 )
 
 // RenderOptions contains rendering configuration with cached styles
@@ -138,101 +91,91 @@ func NewRenderOptions(aliveColor, deadColor, aliveChar, deadChar string) RenderO
 	}
 }
 
-// formatTableCell formats a table cell with icon, label, and value
-func formatStatus(icon, label, value string) string {
-	return tableCellStyle.Render(fmt.Sprintf("%s %s: %s", icon, tableLabelStyle.Render(label), tableValueStyle.Render(value)))
-}
-
-func formatControl(key, label string) string {
-	return tableCellStyle.Render(fmt.Sprintf("%s %s", controlKeyStyle.Render(key), tableLabelStyle.Render(label)))
-}
-
-// GetHeaderLine returns the header display string
-func GetHeaderLine(language Language) string {
-	style := headerStyle.Inherit(tableStyle)
-	if language == Chinese {
+// HeaderLineView returns the header display string
+func (m Model) HeaderLineView() string {
+	style := headerStyle.Width(m.width)
+	if m.language == Chinese {
 		return style.Render(HeaderCN)
 	}
 	return style.Render(HeaderEN)
 }
 
-// GetStatusLine returns the status display string for the first row
-func GetStatusLine(language Language, pattern Pattern, generation int, speed time.Duration, rows, cols int, boundary BoundaryType, paused bool) string {
-	style := statusTableStyle.Inherit(tableStyle)
-	if language == Chinese {
-		status := PlayingCN
-		statusIcon := PlayingIcon
-		if paused {
-			status = PausedCN
-			statusIcon = PausedIcon
+// StatusLineView returns the status display string for the first row
+func (m Model) StatusLineView() string {
+	var status, generationLabel, speedLabel, boundaryLabel, sizeLabel, patternLabel string
+
+	if m.language == Chinese {
+		status = StatusLabelPlayingCN
+		if m.paused {
+			status = StatusLabelPausedCN
 		}
-		tableContent := lipgloss.JoinVertical(lipgloss.Left,
-			lipgloss.JoinHorizontal(lipgloss.Top,
-				formatStatus(GenerationIcon, GenerationLabelCN, fmt.Sprintf("%d", generation)),
-				formatStatus(SpeedIcon, SpeedLabelCN, speed.String()),
-				formatStatus(SizeIcon, SizeLabelCN, fmt.Sprintf("%d×%d", rows, cols)),
-			),
-			lipgloss.JoinHorizontal(lipgloss.Top,
-				formatStatus(BoundaryIcon, BoundaryLabelCN, boundary.ToString(language)),
-				formatStatus(PatternIcon, PatternLabelCN, pattern.ToString(language)),
-				formatStatus(statusIcon, StatusLabelCN, status),
-			),
-		)
-		return style.Render(tableContent)
+		generationLabel = GenerationLabelCN
+		speedLabel = SpeedLabelCN
+		sizeLabel = SizeLabelCN
+		boundaryLabel = BoundaryLabelCN
+		patternLabel = PatternLabelCN
+	} else {
+		status = StatusLabelPlayingEN
+		if m.paused {
+			status = StatusLabelPausedEN
+		}
+		generationLabel = GenerationLabelEN
+		speedLabel = SpeedLabelEN
+		sizeLabel = SizeLabelEN
+		boundaryLabel = BoundaryLabelEN
+		patternLabel = PatternLabelEN
 	}
 
-	status := PlayingEN
-	statusIcon := PlayingIcon
-	if paused {
-		status = PausedEN
-		statusIcon = PausedIcon
-	}
+	tableBuilder.Reset()
+	tableBuilder.WriteString(labelStyle.Render(fmt.Sprintf(generationLabel, m.currentStep)))
+	tableBuilder.WriteString(" | ")
+	tableBuilder.WriteString(labelStyle.Render(fmt.Sprintf(speedLabel, m.refreshRate.String())))
+	tableBuilder.WriteString(" | ")
+	tableBuilder.WriteString(labelStyle.Render(fmt.Sprintf(sizeLabel, m.height, m.width)))
+	tableBuilder.WriteString(" | ")
+	tableBuilder.WriteString(labelStyle.Render(fmt.Sprintf(boundaryLabel, m.boundary.ToString(m.language))))
+	tableBuilder.WriteString(" | ")
+	tableBuilder.WriteString(labelStyle.Render(fmt.Sprintf(patternLabel, m.pattern.ToString(m.language))))
+	tableBuilder.WriteString(" | ")
+	tableBuilder.WriteString(labelStyle.Render(status))
 
-	tableContent := lipgloss.JoinVertical(lipgloss.Left,
-		lipgloss.JoinHorizontal(lipgloss.Top,
-			formatStatus(GenerationIcon, GenerationLabelEN, fmt.Sprintf("%d", generation)),
-			formatStatus(SpeedIcon, SpeedLabelEN, speed.String()),
-			formatStatus(SizeIcon, SizeLabelEN, fmt.Sprintf("%d×%d", rows, cols)),
-		),
-		lipgloss.JoinHorizontal(lipgloss.Top,
-			formatStatus(BoundaryIcon, BoundaryLabelEN, boundary.ToString(language)),
-			formatStatus(PatternIcon, PatternLabelEN, pattern.ToString(language)),
-			formatStatus(statusIcon, StatusLabelEN, status),
-		),
-	)
-	return style.Render(tableContent)
+	return lipgloss.NewStyle().Width(m.width).Align(lipgloss.Center).Render(tableBuilder.String())
 }
 
-// GetControlLine returns the control display string: T,B,R + Space, L, Q
-func GetControlLine(language Language) string {
-	style := controlTableStyle.Inherit(tableStyle)
-	if language == Chinese {
-		tableContent := lipgloss.JoinVertical(lipgloss.Left,
-			lipgloss.JoinHorizontal(lipgloss.Top,
-				formatControl(ResetKey, ResetLabelCN),
-				formatControl(SpeedControlKey, SpeedControlLabelCN),
-				formatControl(QuitKey, QuitLabelCN),
-			),
-			lipgloss.JoinHorizontal(lipgloss.Top,
-				formatControl(LanguageKey, LanguageLabelCN),
-				formatControl(SelectPatternKey, SelectPatternLabelCN),
-				formatControl(SelectBoundaryKey, SelectBoundaryLabelCN),
-			),
-		)
-		return style.Render(tableContent)
+// ControlLineView returns the control display string: T,B,R + Space, L, Q
+func (m Model) ControlLineView() string {
+	var selectPattern, selectBoundary, speedControl, language, space, reset, quit string
+	if m.language == Chinese {
+		selectPattern = SelectPatternLabelCN
+		selectBoundary = SelectBoundaryLabelCN
+		language = LanguageLabelCN
+		speedControl = SpeedControlLabelCN
+		space = SpaceControlLabelCN
+		reset = ResetLabelCN
+		quit = QuitLabelCN
+	} else {
+		selectPattern = SelectPatternLabelEN
+		selectBoundary = SelectBoundaryLabelEN
+		language = LanguageLabelEN
+		speedControl = SpeedControlLabelEN
+		space = SpaceControlLabelEN
+		reset = ResetLabelEN
+		quit = QuitLabelEN
 	}
+	tableBuilder.Reset()
+	tableBuilder.WriteString(labelStyle.Render(selectPattern))
+	tableBuilder.WriteString(" | ")
+	tableBuilder.WriteString(labelStyle.Render(selectBoundary))
+	tableBuilder.WriteString(" | ")
+	tableBuilder.WriteString(labelStyle.Render(speedControl))
+	tableBuilder.WriteString(" | ")
+	tableBuilder.WriteString(labelStyle.Render(language))
+	tableBuilder.WriteString(" | ")
+	tableBuilder.WriteString(labelStyle.Render(space))
+	tableBuilder.WriteString(" | ")
+	tableBuilder.WriteString(labelStyle.Render(reset))
+	tableBuilder.WriteString(" | ")
+	tableBuilder.WriteString(labelStyle.Render(quit))
 
-	tableContent := lipgloss.JoinVertical(lipgloss.Left,
-		lipgloss.JoinHorizontal(lipgloss.Top,
-			formatControl(ResetKey, ResetLabelEN),
-			formatControl(SpeedControlKey, SpeedControlLabelEN),
-			formatControl(QuitKey, QuitLabelEN),
-		),
-		lipgloss.JoinHorizontal(lipgloss.Top,
-			formatControl(LanguageKey, LanguageLabelEN),
-			formatControl(SelectPatternKey, SelectPatternLabelEN),
-			formatControl(SelectBoundaryKey, SelectBoundaryLabelEN),
-		),
-	)
-	return style.Render(tableContent)
+	return lipgloss.NewStyle().Width(m.width).Align(lipgloss.Center).Render(tableBuilder.String())
 }

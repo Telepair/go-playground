@@ -14,7 +14,7 @@ An interactive one-dimensional cellular automaton program with a beautiful termi
 
 **Demo:**
 
-[![asciicast](https://asciinema.org/a/723518.svg)](https://asciinema.org/a/723518)
+[![asciicast](https://asciinema.org/a/723524.svg)](https://asciinema.org/a/723524)
 
 ### 🎮 [Conway's Game of Life](./conway-game-of-life/)
 
