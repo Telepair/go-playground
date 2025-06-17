@@ -20,6 +20,7 @@ help:
 	@echo "  build-all                   Build all projects"
 	@echo "  build-cellular-automaton    Build the cellular automaton"
 	@echo "  build-conway-game-of-life   Build the conway game of life"
+	@echo "  build-mandelbrot-set        Build the mandelbrot set"
 	@echo "  test                        Test all projects"
 	@echo "  clean                       Clean binary and cache"
 	@echo ""
@@ -28,10 +29,13 @@ help:
 	@echo ""
 	@echo "$(GREEN)Conway Game of Life:$(RESET)"
 	@echo "  conway-game-of-life             Run the conway game of life"
+	@echo ""
+	@echo "$(GREEN)Mandelbrot Set:$(RESET)"
+	@echo "  mandelbrot-set              Run the mandelbrot set fractal visualization"
 
 # Build targets
 .PHONY: build-all
-build-all: build-cellular-automaton build-conway-game-of-life
+build-all: build-cellular-automaton build-conway-game-of-life build-mandelbrot-set
 
 .PHONY: build-cellular-automaton
 build-cellular-automaton: tidy fmt vet lint osv 
@@ -46,6 +50,13 @@ build-conway-game-of-life: tidy fmt vet lint osv
 	@mkdir -p bin
 	go build -ldflags="-s -w" -o ./bin/conway-game-of-life ./conway-game-of-life
 	@echo "  >  Conway game of life built successfully."
+
+.PHONY: build-mandelbrot-set
+build-mandelbrot-set: tidy fmt vet lint osv 
+	@echo "  >  Building mandelbrot set..."
+	@mkdir -p bin
+	go build -ldflags="-s -w" -o ./bin/mandelbrot-set ./mandelbrot-set
+	@echo "  >  Mandelbrot set built successfully."
 
 
 .PHONY: test
@@ -102,3 +113,9 @@ cellular-automaton: build-cellular-automaton
 conway-game-of-life: build-conway-game-of-life
 	@echo "Demo Conway Game of Life: Default Settings..."
 	./bin/conway-game-of-life
+
+# Mandelbrot Set demos
+.PHONY: mandelbrot-set
+mandelbrot-set: build-mandelbrot-set
+	@echo "Demo Mandelbrot Set: Fractal Visualization..."
+	./bin/mandelbrot-set
