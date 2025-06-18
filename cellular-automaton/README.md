@@ -114,4 +114,4 @@ The application automatically detects your terminal size and adapts the grid dim
 
 - **Periodic**: The leftmost cell's left neighbor is the rightmost cell, and the rightmost cell's right neighbor is the leftmost cell (looping behavior)
 - **Fixed**: The leftmost cell's left neighbor is always 0 (dead), and the rightmost cell's right neighbor is always 0 (dead)
-- **Reflect**: The leftmost cell's left neighbor is itself, and the rightmost cell's right neighbor is itself (mirror behavior)
+- **Reflect**: The leftmost cell's left neighbor mirrors to position 1, and the rightmost cell's right neighbor mirrors to position cols-2 (true mirror reflection at boundaries)
