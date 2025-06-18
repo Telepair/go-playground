@@ -39,11 +39,15 @@ zₙ₊₁ = zₙ² + c
 ## 安装
 
 ```bash
-# 进入 mandelbrot-set 目录
-cd mandelbrot-set
+# 克隆仓库
+git clone <repository-url>
+cd go-playground/mandelbrot-set
+
+# 构建应用程序
+go build -o mandelbrot-set
 
 # 运行程序
-go run .
+./mandelbrot-set
 ```
 
 ## 使用方法
@@ -52,19 +56,19 @@ go run .
 
 ```bash
 # 基本使用
-go run .
+./mandelbrot-set
 
 # 自定义设置
-go run . -zoom 2.0 -center-x -0.5 -center-y 0.0
+./mandelbrot-set -zoom 2.0 -center-x -0.5 -center-y 0.0
 
 # 高迭代次数和自定义配色
-go run . -max-iter 100 -color-scheme 2
+./mandelbrot-set -max-iter 100 -color-scheme 2
 
 # 朱利亚集合模式
-go run . -julia -julia-c "0.285+0.01i"
+./mandelbrot-set -julia -julia-c "0.285+0.01i"
 
 # 中文界面
-go run . -lang cn
+./mandelbrot-set -lang cn
 ```
 
 ### 键盘控制
@@ -117,24 +121,26 @@ go run . -lang cn
 
 ### 命令行参数
 
-| 参数            | 默认值          | 描述                 |
-| --------------- | --------------- | -------------------- |
-| `-rows`         | 30              | 显示网格的行数       |
-| `-cols`         | 80              | 显示网格的列数       |
-| `-max-iter`     | 50              | 最大迭代次数         |
-| `-zoom`         | 1.0             | 初始缩放级别         |
-| `-center-x`     | -0.5            | 初始中心 X 坐标      |
-| `-center-y`     | 0.0             | 初始中心 Y 坐标      |
-| `-color-scheme` | 0               | 配色方案 (0-4)       |
-| `-julia`        | false           | 以朱利亚集合模式启动 |
-| `-julia-c`      | "-0.7+0.27015i" | 朱利亚集合参数       |
-| `-lang`         | "en"            | 语言 (en/cn)         |
+| 参数                | 默认值          | 描述                 |
+| ------------------- | --------------- | -------------------- |
+| `-max-iter`         | 50              | 最大迭代次数         |
+| `-zoom`             | 1.0             | 初始缩放级别         |
+| `-center-x`         | -0.5            | 初始中心 X 坐标      |
+| `-center-y`         | 0.0             | 初始中心 Y 坐标      |
+| `-color-scheme`     | 0               | 配色方案 (0-4)       |
+| `-julia`            | false           | 以朱利亚集合模式启动 |
+| `-julia-c`          | "-0.7+0.27015i" | 朱利亚集合参数       |
+| `-lang`             | "en"            | 语言 (en/cn)         |
+| `-profile`          | false           | 启用性能分析和监控   |
+| `-profile-port`     | 6060            | 性能分析服务器端口   |
+| `-profile-interval` | 5s              | 性能信息输出间隔     |
+| `-log-file`         | "debug.log"     | 日志文件路径         |
 
 ## 示例
 
 ### 探索曼德博集合
 
-1. 启动程序：`go run .`
+1. 启动程序：`./mandelbrot-set`
 2. 使用方向键平移
 3. 使用 `+` 和 `-` 放大和缩小
 4. 按 `P` 跳转到有趣的位置
@@ -142,7 +148,7 @@ go run . -lang cn
 
 ### 朱利亚集合探索
 
-1. 以朱利亚集合模式启动：`go run . -julia`
+1. 以朱利亚集合模式启动：`./mandelbrot-set -julia`
 2. 或使用 `M` 键切换模式
 3. 朱利亚集合使用固定参数 `c`
 4. 不同的 `c` 值创建不同的朱利亚集合
@@ -152,7 +158,7 @@ go run . -lang cn
 详细探索：
 
 ```bash
-go run . -max-iter 200 -zoom 100 -center-x -0.7463 -center-y 0.1102
+./mandelbrot-set -max-iter 200 -zoom 100 -center-x -0.7463 -center-y 0.1102
 ```
 
 ## 数学趣味

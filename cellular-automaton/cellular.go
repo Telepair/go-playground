@@ -38,21 +38,37 @@ func (ca *CellularAutomaton) getNeighbors(idx int) (left, right bool) {
 
 	switch ca.boundary {
 	case BoundaryPeriodic:
-		// Periodic boundary: wrap around (most efficient case first)
-		leftIdx := (idx - 1 + ca.cols) % ca.cols
-		rightIdx := (idx + 1) % ca.cols
-		return ca.currentRow[leftIdx], ca.currentRow[rightIdx]
-
-	case BoundaryReflect:
-		// Reflective boundary: reflect edge cells themselves
+		// Optimized periodic boundary without modulo
 		leftIdx := idx - 1
 		if leftIdx < 0 {
-			leftIdx = 0 // Reflect the first cell (itself)
+			leftIdx = ca.cols - 1
 		}
 
 		rightIdx := idx + 1
 		if rightIdx >= ca.cols {
-			rightIdx = ca.cols - 1 // Reflect the last cell (itself)
+			rightIdx = 0
+		}
+
+		return ca.currentRow[leftIdx], ca.currentRow[rightIdx]
+
+	case BoundaryReflect:
+		// Reflective boundary: mirror the grid at boundaries
+		leftIdx := idx - 1
+		if leftIdx < 0 {
+			// For left boundary, reflect to position 1 (mirror of -1 around 0)
+			leftIdx = 1
+			if leftIdx >= ca.cols {
+				leftIdx = ca.cols - 1 // Fallback for very small grids
+			}
+		}
+
+		rightIdx := idx + 1
+		if rightIdx >= ca.cols {
+			// For right boundary, reflect to position cols-2 (mirror of cols around cols-1)
+			rightIdx = ca.cols - 2
+			if rightIdx < 0 {
+				rightIdx = 0 // Fallback for very small grids
+			}
 		}
 
 		return ca.currentRow[leftIdx], ca.currentRow[rightIdx]
@@ -94,9 +110,37 @@ func (ca *CellularAutomaton) getRuleBit(idx int) bool {
 
 // Step advances the cellular automaton by one generation
 func (ca *CellularAutomaton) Step() bool {
-	// Calculate next generation based on current row
-	for i := range ca.cols {
-		ca.nextRow[i] = ca.getRuleBit(i)
+	// Optimized step with reduced getRuleBit calls
+	// Pre-cache boundary handling for first and last cells
+
+	// Handle first cell
+	ca.nextRow[0] = ca.getRuleBit(0)
+
+	// Handle middle cells with direct neighbor access for better performance
+	for i := 1; i < ca.cols-1; i++ {
+		// For middle cells, we can directly access neighbors without boundary checks
+		left := ca.currentRow[i-1]
+		center := ca.currentRow[i]
+		right := ca.currentRow[i+1]
+
+		// Convert boolean triplet to pattern using bit operations
+		pattern := 0
+		if left {
+			pattern |= 4
+		}
+		if center {
+			pattern |= 2
+		}
+		if right {
+			pattern |= 1
+		}
+
+		ca.nextRow[i] = ca.ruleTable[pattern]
+	}
+
+	// Handle last cell
+	if ca.cols > 1 {
+		ca.nextRow[ca.cols-1] = ca.getRuleBit(ca.cols - 1)
 	}
 
 	// Swap current and next rows for next iteration (more efficient than copying)

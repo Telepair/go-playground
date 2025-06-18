@@ -49,6 +49,16 @@ func TestComplexNumberParsing(t *testing.T) {
 		{"-0.7+0.27015i", complex(-0.7, 0.27015), false},
 		{"0.285+0.01i", complex(0.285, 0.01), false},
 		{"-0.5-0.5i", complex(-0.5, -0.5), false},
+		// New test cases for edge cases
+		{"", complex(0, 0), true},          // Empty string
+		{"1.5", complex(1.5, 0), false},    // Pure real number
+		{"-2.3", complex(-2.3, 0), false},  // Negative real number
+		{"0+0i", complex(0, 0), false},     // Zero complex number
+		{"+1.0+1.0i", complex(0, 0), true}, // Invalid leading plus
+		{"1.0++1.0i", complex(0, 0), true}, // Double plus
+		{"1.0+-1.0i", complex(0, 0), true}, // Mixed operators
+		{"abc+def", complex(0, 0), true},   // Invalid characters
+		{"1.0+i", complex(0, 0), true},     // Missing imaginary value
 		{"invalid", 0, true},
 	}
 
@@ -98,5 +108,40 @@ func BenchmarkMandelbrotCalculation(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		mandelbrot := NewMandelbrotSet(config)
 		_ = mandelbrot.GetGrid()
+	}
+}
+
+// Test numerical stability with extreme values
+func TestMandelbrotNumericalStability(t *testing.T) {
+	config := Config{
+		MaxIter:     100,
+		Zoom:        1.0,
+		CenterX:     0.0,
+		CenterY:     0.0,
+		ColorScheme: ColorSchemeClassic,
+		Julia:       false,
+		JuliaC:      DefaultJuliaC,
+		Language:    DefaultLanguage,
+	}
+	mandelbrot := NewMandelbrotSet(config)
+
+	// Test with extremely large values that could cause overflow
+	extremeValues := []complex128{
+		complex(1e10, 1e10),   // Very large numbers
+		complex(-1e10, -1e10), // Very large negative numbers
+		complex(1e-10, 1e-10), // Very small numbers
+	}
+
+	for _, c := range extremeValues {
+		iterations := mandelbrot.mandelbrotIterations(c)
+		if iterations < 0 || iterations > config.MaxIter {
+			t.Errorf("Invalid iteration count %d for complex number %v", iterations, c)
+		}
+
+		// Julia set test
+		juliaIterations := mandelbrot.juliaIterations(c)
+		if juliaIterations < 0 || juliaIterations > config.MaxIter {
+			t.Errorf("Invalid Julia iteration count %d for complex number %v", juliaIterations, c)
+		}
 	}
 }
