@@ -169,13 +169,29 @@ func (c *Config) Check() {
 
 // ParseComplexNumber parses a complex number string in the format "a+bi" or "a-bi"
 func ParseComplexNumber(s string) (complex128, error) {
+	if s == "" {
+		return 0, fmt.Errorf("empty complex number string")
+	}
+
 	s = strings.ReplaceAll(s, " ", "")
 	s = strings.ReplaceAll(s, "i", "")
 
+	// Handle pure real numbers (no imaginary part)
+	if !strings.Contains(s, "+") && strings.Count(s, "-") <= 1 {
+		if realPart, err := strconv.ParseFloat(s, 64); err == nil {
+			return complex(realPart, 0), nil
+		}
+	}
+
 	// Handle different formats
 	if strings.Contains(s, "+") {
+		// Check for invalid patterns like "+-" or "-+"
+		if strings.Contains(s, "+-") || strings.Contains(s, "-+") {
+			return 0, fmt.Errorf("invalid complex number format: %s", s)
+		}
+
 		parts := strings.Split(s, "+")
-		if len(parts) == 2 {
+		if len(parts) == 2 && parts[0] != "" && parts[1] != "" {
 			realPart, err1 := strconv.ParseFloat(parts[0], 64)
 			imagPart, err2 := strconv.ParseFloat(parts[1], 64)
 			if err1 == nil && err2 == nil {
@@ -186,7 +202,7 @@ func ParseComplexNumber(s string) (complex128, error) {
 		// Handle negative real part like "-0.7-0.27015"
 		s = s[1:] // Remove first minus
 		parts := strings.Split(s, "-")
-		if len(parts) == 2 {
+		if len(parts) == 2 && parts[0] != "" && parts[1] != "" {
 			realPart, err1 := strconv.ParseFloat("-"+parts[0], 64)
 			imagPart, err2 := strconv.ParseFloat("-"+parts[1], 64)
 			if err1 == nil && err2 == nil {
@@ -195,7 +211,7 @@ func ParseComplexNumber(s string) (complex128, error) {
 		}
 	} else if strings.Contains(s, "-") && !strings.HasPrefix(s, "-") {
 		parts := strings.Split(s, "-")
-		if len(parts) == 2 {
+		if len(parts) == 2 && parts[0] != "" && parts[1] != "" {
 			realPart, err1 := strconv.ParseFloat(parts[0], 64)
 			imagPart, err2 := strconv.ParseFloat("-"+parts[1], 64)
 			if err1 == nil && err2 == nil {

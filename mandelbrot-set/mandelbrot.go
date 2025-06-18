@@ -88,10 +88,19 @@ func (m *MandelbrotSet) mandelbrotIterations(c complex128) int {
 	z := complex(0, 0)
 
 	for i := 0; i < m.maxIter; i++ {
-		if cmplx.Abs(z) > 2.0 {
+		absZ := cmplx.Abs(z)
+		if absZ > 2.0 {
+			return i
+		}
+		// Additional overflow protection
+		if absZ > 1e10 {
 			return i
 		}
 		z = z*z + c
+		// Check for NaN or infinity
+		if cmplx.IsNaN(z) || cmplx.IsInf(z) {
+			return i
+		}
 	}
 
 	return m.maxIter
@@ -100,10 +109,19 @@ func (m *MandelbrotSet) mandelbrotIterations(c complex128) int {
 // juliaIterations calculates the number of iterations for a point in the Julia set
 func (m *MandelbrotSet) juliaIterations(z complex128) int {
 	for i := 0; i < m.maxIter; i++ {
-		if cmplx.Abs(z) > 2.0 {
+		absZ := cmplx.Abs(z)
+		if absZ > 2.0 {
+			return i
+		}
+		// Additional overflow protection
+		if absZ > 1e10 {
 			return i
 		}
 		z = z*z + m.juliaC
+		// Check for NaN or infinity
+		if cmplx.IsNaN(z) || cmplx.IsInf(z) {
+			return i
+		}
 	}
 
 	return m.maxIter

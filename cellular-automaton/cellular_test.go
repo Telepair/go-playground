@@ -210,17 +210,17 @@ func TestCellularAutomaton_GetNeighbors(t *testing.T) {
 	// Test reflective boundary
 	ca.boundary = BoundaryReflect
 
-	// Test left edge (should reflect itself)
+	// Test left edge (should reflect to position 1)
 	left, _ = ca.getNeighbors(0)
-	expected_left := ca.currentRow[0] // Should reflect itself
+	expected_left := ca.currentRow[1] // Should reflect to position 1
 	if left != expected_left {
 		t.Errorf("Reflective boundary left edge: expected left=%v, got left=%v", expected_left, left)
 	}
 
-	// Test right edge (should reflect itself)
+	// Test right edge (should reflect to position cols-2)
 	right_edge_idx = ca.cols - 1
 	_, right = ca.getNeighbors(right_edge_idx)
-	expected_right := ca.currentRow[right_edge_idx] // Should reflect itself
+	expected_right := ca.currentRow[ca.cols-2] // Should reflect to position cols-2
 	if right != expected_right {
 		t.Errorf("Reflective boundary right edge: expected right=%v, got right=%v", expected_right, right)
 	}
@@ -374,6 +374,58 @@ func TestCellularAutomaton_KnownPatterns(t *testing.T) {
 		if !cell {
 			t.Errorf("Rule 255: expected all cells to be alive, but cell %d is dead", i)
 		}
+	}
+}
+
+// Test reflective boundary edge cases
+func TestCellularAutomaton_ReflectiveBoundaryEdgeCases(t *testing.T) {
+	// Test with very small grid
+	ca := NewCellularAutomaton(30, 3, BoundaryReflect)
+
+	// Set up a known pattern
+	ca.currentRow[0] = true
+	ca.currentRow[1] = false
+	ca.currentRow[2] = true
+
+	// Test left edge (index 0)
+	left, right := ca.getNeighbors(0)
+	// Left neighbor should be reflected from position 1
+	if left != ca.currentRow[1] {
+		t.Errorf("Reflective boundary left edge: expected left=%v, got left=%v", ca.currentRow[1], left)
+	}
+	// Right neighbor should be normal
+	if right != ca.currentRow[1] {
+		t.Errorf("Reflective boundary left edge: expected right=%v, got right=%v", ca.currentRow[1], right)
+	}
+
+	// Test right edge (index 2)
+	left, right = ca.getNeighbors(2)
+	// Left neighbor should be normal
+	if left != ca.currentRow[1] {
+		t.Errorf("Reflective boundary right edge: expected left=%v, got left=%v", ca.currentRow[1], left)
+	}
+	// Right neighbor should be reflected from position 1
+	if right != ca.currentRow[1] {
+		t.Errorf("Reflective boundary right edge: expected right=%v, got right=%v", ca.currentRow[1], right)
+	}
+}
+
+// Test invalid input handling
+func TestCellularAutomaton_InvalidInput(t *testing.T) {
+	ca := NewCellularAutomaton(30, 10, BoundaryPeriodic)
+
+	// Test with nil currentRow
+	ca.currentRow = nil
+	left, right := ca.getNeighbors(5)
+	if left != false || right != false {
+		t.Errorf("Nil currentRow: expected (false, false), got (%v, %v)", left, right)
+	}
+
+	// Test with negative index
+	ca.currentRow = make([]bool, 10)
+	left, right = ca.getNeighbors(-1)
+	if left != false || right != false {
+		t.Errorf("Negative index: expected (false, false), got (%v, %v)", left, right)
 	}
 }
 

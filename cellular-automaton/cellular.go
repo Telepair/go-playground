@@ -44,15 +44,23 @@ func (ca *CellularAutomaton) getNeighbors(idx int) (left, right bool) {
 		return ca.currentRow[leftIdx], ca.currentRow[rightIdx]
 
 	case BoundaryReflect:
-		// Reflective boundary: reflect edge cells themselves
+		// Reflective boundary: mirror the grid at boundaries
 		leftIdx := idx - 1
 		if leftIdx < 0 {
-			leftIdx = 0 // Reflect the first cell (itself)
+			// For left boundary, reflect to position 1 (mirror of -1 around 0)
+			leftIdx = 1
+			if leftIdx >= ca.cols {
+				leftIdx = ca.cols - 1 // Fallback for very small grids
+			}
 		}
 
 		rightIdx := idx + 1
 		if rightIdx >= ca.cols {
-			rightIdx = ca.cols - 1 // Reflect the last cell (itself)
+			// For right boundary, reflect to position cols-2 (mirror of cols around cols-1)
+			rightIdx = ca.cols - 2
+			if rightIdx < 0 {
+				rightIdx = 0 // Fallback for very small grids
+			}
 		}
 
 		return ca.currentRow[leftIdx], ca.currentRow[rightIdx]

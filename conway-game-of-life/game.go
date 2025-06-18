@@ -248,8 +248,11 @@ func (g *GameOfLife) countNeighbors(row, col int) int {
 			neighborCol = (neighborCol + g.cols) % g.cols
 
 			// Additional bounds check for safety after modulo operation
+			// Note: modulo operation can still result in negative values in some Go versions
 			if neighborRow >= 0 && neighborRow < g.rows &&
-				neighborCol >= 0 && neighborCol < g.cols {
+				neighborCol >= 0 && neighborCol < g.cols &&
+				g.currentGrid != nil && len(g.currentGrid) > neighborRow &&
+				len(g.currentGrid[neighborRow]) > neighborCol {
 				if g.currentGrid[neighborRow][neighborCol] {
 					count++
 				}
