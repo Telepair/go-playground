@@ -84,8 +84,6 @@ func TestColorSchemes(t *testing.T) {
 
 func BenchmarkMandelbrotCalculation(b *testing.B) {
 	config := Config{
-		Rows:        20,
-		Cols:        20,
 		MaxIter:     50,
 		Zoom:        1.0,
 		CenterX:     -0.5,

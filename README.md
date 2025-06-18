@@ -26,6 +26,16 @@ A terminal user interface (TUI) implementation of Conway's Game of Life with mul
 
 [![asciicast](https://asciinema.org/a/723376.svg)](https://asciinema.org/a/723376)
 
+### 📊 [Mandelbrot Set](./mandelbrot-set/)
+
+An interactive Mandelbrot set terminal user interface (TUI) implementation.
+
+[Wikipedia - Mandelbrot Set](https://en.wikipedia.org/wiki/Mandelbrot_set)
+
+**Demo:**
+
+[![asciicast](https://asciinema.org/a/723615.svg)](https://asciinema.org/a/723615)
+
 ## Project Structure
 
 ```

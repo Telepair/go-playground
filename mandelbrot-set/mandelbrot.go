@@ -27,8 +27,8 @@ func NewMandelbrotSet(config Config) *MandelbrotSet {
 	}
 
 	m := &MandelbrotSet{
-		width:       config.Cols,
-		height:      config.Rows,
+		width:       DefaultCols,
+		height:      DefaultRows,
 		maxIter:     config.MaxIter,
 		zoom:        config.Zoom,
 		centerX:     config.CenterX,
@@ -183,11 +183,17 @@ func (m *MandelbrotSet) Pan(deltaX, deltaY int) {
 }
 
 // Reset resets to default parameters
-func (m *MandelbrotSet) Reset() {
+func (m *MandelbrotSet) Reset(height, width int) {
+	m.height = height
+	m.width = width
 	m.zoom = DefaultZoom
 	m.centerX = DefaultCenterX
 	m.centerY = DefaultCenterY
 	m.maxIter = DefaultMaxIterations
+	m.grid = make([][]int, m.height)
+	for i := range m.grid {
+		m.grid[i] = make([]int, m.width)
+	}
 	m.julia = false
 	juliaC, _ := ParseComplexNumber(DefaultJuliaC)
 	m.juliaC = juliaC

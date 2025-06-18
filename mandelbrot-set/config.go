@@ -89,10 +89,10 @@ func (cs ColorScheme) ToString(language Language) string {
 // Application constants
 const (
 	// Grid and display constants
-	DefaultWindowRows = 30 // Default window rows
-	DefaultWindowCols = 80 // Default window columns
-	MinWindowRows     = 10 // Minimum window rows
-	MinWindowCols     = 20 // Minimum window columns
+	DefaultRows = 30 // Default window rows
+	DefaultCols = 80 // Default window columns
+	MinRows     = 10 // Minimum window rows
+	MinCols     = 20 // Minimum window columns
 
 	// Mandelbrot set constants
 	DefaultMaxIterations = 50              // Default maximum iterations
@@ -110,12 +110,15 @@ const (
 	// Default values
 	DefaultLanguage    = English            // Default language
 	DefaultColorScheme = ColorSchemeClassic // Default color scheme
+
+	// Profiling and monitoring
+	DefaultLogFile         = "debug.log"     // Default log file path
+	DefaultProfileInterval = 5 * time.Second // Default profile information output interval
+	DefaultProfilePort     = 6060            // Default profile server port
 )
 
 // DefaultConfig is the default configuration
 var DefaultConfig = Config{
-	Rows:        DefaultWindowRows,
-	Cols:        DefaultWindowCols,
 	MaxIter:     DefaultMaxIterations,
 	Zoom:        DefaultZoom,
 	CenterX:     DefaultCenterX,
@@ -128,8 +131,6 @@ var DefaultConfig = Config{
 
 // Config holds all application configuration
 type Config struct {
-	Rows        int
-	Cols        int
 	MaxIter     int
 	Zoom        float64
 	CenterX     float64
@@ -152,14 +153,6 @@ func (c *Config) SetLanguage(lang string) {
 
 // Check validates the configuration
 func (c *Config) Check() {
-	if c.Rows < MinWindowRows {
-		fmt.Printf("invalid number of rows %d, must be at least %d, using default number of rows %d\n", c.Rows, MinWindowRows, DefaultWindowRows)
-		c.Rows = DefaultWindowRows
-	}
-	if c.Cols < MinWindowCols {
-		fmt.Printf("invalid number of columns %d, must be at least %d, using default number of columns %d\n", c.Cols, MinWindowCols, DefaultWindowCols)
-		c.Cols = DefaultWindowCols
-	}
 	if c.MaxIter < MinMaxIterations || c.MaxIter > MaxMaxIterations {
 		fmt.Printf("invalid max iterations %d, must be between %d and %d, using default %d\n", c.MaxIter, MinMaxIterations, MaxMaxIterations, DefaultMaxIterations)
 		c.MaxIter = DefaultMaxIterations

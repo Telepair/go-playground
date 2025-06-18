@@ -1,6 +1,12 @@
 # 曼德博集合 - 分形可视化
 
+[English Version / 英文版本](README.md)
+
+[Wikipedia - Mandelbrot Set](https://en.wikipedia.org/wiki/Mandelbrot_set)
+
 一个精美的终端用户界面 (TUI) 实现，展示曼德博集合和朱利亚集合，通过交互式可视化探索迷人的分形世界。
+
+[![asciicast](https://asciinema.org/a/723615.svg)](https://asciinema.org/a/723615)
 
 ## 特性
 

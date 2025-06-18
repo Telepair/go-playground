@@ -26,6 +26,16 @@ _[English Version / 英文版本](README.md)_
 
 [![asciicast](https://asciinema.org/a/723376.svg)](https://asciinema.org/a/723376)
 
+### 📊 [曼德博集合 (Mandelbrot Set)](./mandelbrot-set/)
+
+一个交互式的曼德博集合终端用户界面(TUI)实现。
+
+[Wikipedia - Mandelbrot Set](https://en.wikipedia.org/wiki/Mandelbrot_set)
+
+**演示:**
+
+[![asciicast](https://asciinema.org/a/723615.svg)](https://asciinema.org/a/723615)
+
 ## 项目结构
 
 ```

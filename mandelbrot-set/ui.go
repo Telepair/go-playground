@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -9,44 +10,49 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var (
+	keepWidth  = 4
+	keepHeight = 8
+)
+
 // Model represents the application state
 type Model struct {
 	mandelbrotSet *MandelbrotSet
-	rows          int
-	cols          int
-	language      Language
-	renderOptions RenderOptions
+
+	language Language
+
+	width         int
+	gridHeight    int
+	gridWidth     int
 	refreshRate   time.Duration
 	calculating   bool
 	currentPreset int
-	quitting      bool
 	// String builders for performance
-	gridBuilder   strings.Builder
-	statusBuilder strings.Builder
+	buffer        strings.Builder
+	gridBuffer    strings.Builder
+	renderOptions RenderOptions
+	logger        *slog.Logger
 }
 
 // NewModel creates a new model with the given configuration
 func NewModel(cfg Config) Model {
 	cfg.Check()
 
+	gridHeight := DefaultRows - keepHeight
+	gridWidth := DefaultCols - keepWidth
+
 	model := Model{
 		mandelbrotSet: NewMandelbrotSet(cfg),
-		rows:          cfg.Rows,
-		cols:          cfg.Cols,
+		width:         DefaultCols,
+		gridHeight:    gridHeight,
+		gridWidth:     gridWidth,
 		language:      cfg.Language,
 		renderOptions: NewRenderOptions(cfg.ColorScheme),
 		refreshRate:   DefaultRefreshRate,
 		calculating:   false,
 		currentPreset: 0,
-		quitting:      false,
+		logger:        slog.With("module", "ui"),
 	}
-
-	// Pre-allocate string builders
-	estimatedGridSize := cfg.Rows * (cfg.Cols + 10)
-	estimatedStatusSize := 500
-
-	model.gridBuilder.Grow(estimatedGridSize)
-	model.statusBuilder.Grow(estimatedStatusSize)
 
 	return model
 }
@@ -61,17 +67,40 @@ func (m Model) Init() tea.Cmd {
 
 // Update handles messages
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.quitting {
-		return m, nil
-	}
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		m.logger.Debug("Key pressed", "key", msg.String())
 		return m.handleKeyPress(msg)
+	case tea.WindowSizeMsg:
+		m.logger.Debug("Window size", "width", msg.Width, "height", msg.Height)
+		return m.handleWindowResize(msg)
 	case calculationMsg:
+		m.logger.Debug("Calculation complete", "time", msg)
 		m.calculating = false
 		return m, nil
 	}
+	return m, nil
+}
+
+// View renders the current state
+func (m Model) View() string {
+	m.logger.Debug("Model View",
+		"width", m.width,
+		"gridWidth", m.gridWidth,
+		"gridHeight", m.gridHeight,
+		"language", m.language,
+		"calculating", m.calculating,
+		"currentPreset", m.currentPreset,
+		"refreshRate", m.refreshRate)
+	return m.RenderMode()
+}
+
+// handleWindowResize processes terminal window size changes
+func (m Model) handleWindowResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
+	m.width = msg.Width
+	m.gridWidth = msg.Width - keepWidth
+	m.gridHeight = msg.Height - keepHeight
+	m.mandelbrotSet.Reset(m.gridHeight, m.gridWidth)
 	return m, nil
 }
 
@@ -80,7 +109,6 @@ func (m Model) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if m.calculating {
 		// Ignore input while calculating except quit
 		if msg.String() == "ctrl+c" || msg.String() == "q" {
-			m.quitting = true
 			return m, tea.Quit
 		}
 		return m, nil
@@ -88,7 +116,6 @@ func (m Model) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	switch msg.String() {
 	case "ctrl+c", "q", "esc":
-		m.quitting = true
 		return m, tea.Quit
 
 	// Pan controls
@@ -128,12 +155,12 @@ func (m Model) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	// Iteration controls
 	case "i", "I":
 		currentIter := m.mandelbrotSet.GetMaxIterations()
-		newIter := minInt(currentIter+10, MaxMaxIterations)
+		newIter := min(currentIter+10, MaxMaxIterations)
 		m.mandelbrotSet.SetMaxIterations(newIter)
 		return m.recalculate()
 	case "k", "K":
 		currentIter := m.mandelbrotSet.GetMaxIterations()
-		newIter := maxInt(currentIter-10, MinMaxIterations)
+		newIter := max(currentIter-10, MinMaxIterations)
 		m.mandelbrotSet.SetMaxIterations(newIter)
 		return m.recalculate()
 
@@ -151,7 +178,7 @@ func (m Model) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	// Reset
 	case "r", "R":
-		m.mandelbrotSet.Reset()
+		m.mandelbrotSet.Reset(m.gridHeight, m.gridWidth)
 		m.currentPreset = 0
 		return m.recalculate()
 
@@ -196,60 +223,35 @@ func (m Model) goToNextPreset() (tea.Model, tea.Cmd) {
 	return m.recalculate()
 }
 
-// View renders the current state
-func (m Model) View() string {
-	if m.quitting {
-		return ""
-	}
-	return m.RenderFullUI()
-}
+// RenderMode renders the complete UI mode view with enhanced layout
+func (m Model) RenderMode() string {
+	m.buffer.Reset()
 
-// RenderFullUI renders the complete user interface
-func (m Model) RenderFullUI() string {
-	m.statusBuilder.Reset()
+	// Build complete UI with enhanced styling
+	m.buffer.WriteString(m.HeaderLineView())
+	m.buffer.WriteString("\n")
+	m.buffer.WriteString(m.StatusLineView())
+	m.buffer.WriteString("\n\n")
+	m.buffer.WriteString(m.RenderGrid())
+	m.buffer.WriteString("\n\n")
+	m.buffer.WriteString(m.ControlLineView())
 
-	// Header
-	m.statusBuilder.WriteString(GetHeaderLine(m.language))
-	m.statusBuilder.WriteString("\n")
-
-	// Status line
-	m.statusBuilder.WriteString(GetStatusLine(m.mandelbrotSet, m.language))
-	m.statusBuilder.WriteString("\n")
-
-	// Julia parameter line (if in Julia mode)
-	if juliaLine := GetJuliaParameterLine(m.mandelbrotSet, m.language); juliaLine != "" {
-		m.statusBuilder.WriteString(juliaLine)
-		m.statusBuilder.WriteString("\n")
-	}
-
-	// Main fractal grid
-	if m.calculating {
-		m.statusBuilder.WriteString(m.renderCalculatingMessage())
-	} else {
-		m.statusBuilder.WriteString(m.RenderGrid())
-	}
-
-	// Help line
-	m.statusBuilder.WriteString("\n")
-	m.statusBuilder.WriteString(GetHelpLine(m.language))
-
-	// Current preset info
-	if preset := m.getCurrentPresetInfo(); preset != "" {
-		m.statusBuilder.WriteString("\n")
-		m.statusBuilder.WriteString(preset)
-	}
-
-	return m.statusBuilder.String()
+	return m.buffer.String()
 }
 
 // RenderGrid renders the fractal grid
 func (m Model) RenderGrid() string {
-	m.gridBuilder.Reset()
+	// Main fractal grid
+	if m.calculating {
+		return m.renderCalculatingMessage()
+	}
+
+	m.gridBuffer.Reset()
 	grid := m.mandelbrotSet.GetGrid()
 	maxIter := m.mandelbrotSet.GetMaxIterations()
 
-	for y := 0; y < m.rows; y++ {
-		for x := 0; x < m.cols; x++ {
+	for y := 0; y < m.gridHeight; y++ {
+		for x := 0; x < m.gridWidth; x++ {
 			if y < len(grid) && x < len(grid[y]) {
 				iter := grid[y][x]
 				char := m.renderOptions.GetCharacterForIteration(iter, maxIter)
@@ -257,17 +259,17 @@ func (m Model) RenderGrid() string {
 
 				// Create styled character
 				style := lipgloss.NewStyle().Foreground(color)
-				m.gridBuilder.WriteString(style.Render(char))
+				m.gridBuffer.WriteString(style.Render(char))
 			} else {
-				m.gridBuilder.WriteString(" ")
+				m.gridBuffer.WriteString(" ")
 			}
 		}
-		if y < m.rows-1 {
-			m.gridBuilder.WriteString("\n")
+		if y < m.gridHeight-1 {
+			m.gridBuffer.WriteString("\n")
 		}
 	}
 
-	return m.gridBuilder.String()
+	return m.gridBuffer.String()
 }
 
 // renderCalculatingMessage renders the calculating message
@@ -280,19 +282,19 @@ func (m Model) renderCalculatingMessage() string {
 	}
 
 	// Center the message in the grid area
-	lines := make([]string, m.rows)
-	midRow := m.rows / 2
+	lines := make([]string, m.gridHeight)
+	midRow := m.gridHeight / 2
 
 	for i := range lines {
 		if i == midRow {
-			padding := (m.cols - len(msg)) / 2
+			padding := (m.width - len(msg)) / 2
 			if padding > 0 {
 				lines[i] = strings.Repeat(" ", padding) + msg
 			} else {
 				lines[i] = msg
 			}
 		} else {
-			lines[i] = strings.Repeat(" ", m.cols)
+			lines[i] = strings.Repeat(" ", m.width)
 		}
 	}
 
@@ -311,19 +313,4 @@ func (m Model) getCurrentPresetInfo() string {
 		return helpStyle.Render(fmt.Sprintf("当前预设: %s (%d/%d)", preset.Name, m.currentPreset+1, len(presets)))
 	}
 	return helpStyle.Render(fmt.Sprintf("Current Preset: %s (%d/%d)", preset.Name, m.currentPreset+1, len(presets)))
-}
-
-// Helper functions for min/max since they might not be available in older Go versions
-func minInt(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func maxInt(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
 }

@@ -22,6 +22,7 @@ help:
 	@echo "  build-conway-game-of-life   Build the conway game of life"
 	@echo "  build-mandelbrot-set        Build the mandelbrot set"
 	@echo "  test                        Test all projects"
+	@echo "  bench                       Run benchmarks"
 	@echo "  clean                       Clean binary and cache"
 	@echo ""
 	@echo "$(GREEN)Cellular Automaton:$(RESET)" 
@@ -63,9 +64,12 @@ build-mandelbrot-set: tidy fmt vet lint osv
 test: tidy fmt vet lint osv
 	@echo "  >  Testing ..."
 	go test -v -race ./...
-	go test -v -bench=. -benchmem -run=^$$ ./...
 	go test -v -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out
+
+.PHONY: bench
+bench:
+	go test -v -bench=. -benchmem -run=^$$ ./...
 
 .PHONY: tidy fmt vet lint osv
 tidy:
@@ -73,7 +77,7 @@ tidy:
 
 fmt: 
 	go fmt ./...
-		@if [ ! -x "$(GOIMPORTS)" ]; then \
+	@if [ ! -x "$(GOIMPORTS)" ]; then \
 		echo "$(YELLOW)  >  Installing goimports...$(RESET)"; \
 		go install golang.org/x/tools/cmd/goimports@latest; \
 	fi

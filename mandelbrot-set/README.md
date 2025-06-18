@@ -1,6 +1,12 @@
 # Mandelbrot Set - Fractal Visualization
 
+[中文版本 / Chinese Version](README_CN.md)
+
+[Wikipedia - Mandelbrot Set](https://en.wikipedia.org/wiki/Mandelbrot_set)
+
 A beautiful Terminal User Interface (TUI) implementation of the Mandelbrot and Julia sets, showcasing the fascinating world of fractals through interactive visualization.
+
+[![asciicast](https://asciinema.org/a/723615.svg)](https://asciinema.org/a/723615)
 
 ## Features
 
