@@ -8,6 +8,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+var (
+	keepWidth  = 4
+	keepHeight = 6
+)
+
 // Model represents the application state
 type Model struct {
 	ca *CellularAutomaton
@@ -19,8 +24,9 @@ type Model struct {
 	currentStep    int
 	refreshRate    time.Duration
 	boundary       BoundaryType
-	height         int
 	width          int
+	gridHeight     int
+	gridWidth      int
 	buffer         strings.Builder
 	gridBuffer     strings.Builder
 	gridRingBuffer *GridRingBuffer
@@ -32,15 +38,18 @@ type Model struct {
 func NewModel(cfg Config) Model {
 	cfg.Check()
 
+	gridHeight := DefaultRows - keepHeight
+	gridWidth := DefaultCols - keepWidth
 	model := Model{
 		ca:             NewCellularAutomaton(cfg.Rule, DefaultCols, DefaultBoundary),
 		rule:           cfg.Rule,
 		language:       cfg.Language,
 		refreshRate:    DefaultRefreshRate,
 		boundary:       DefaultBoundary,
-		height:         DefaultRows,
 		width:          DefaultCols,
-		gridRingBuffer: NewGridRingBuffer(DefaultRows, DefaultCols),
+		gridHeight:     gridHeight,
+		gridWidth:      gridWidth,
+		gridRingBuffer: NewGridRingBuffer(gridHeight, gridWidth),
 		renderOptions:  NewRenderOptions(cfg.AliveColor, cfg.DeadColor, cfg.AliveChar, cfg.DeadChar),
 		logger:         slog.With("module", "ui"),
 	}
@@ -82,8 +91,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View renders the current state
 func (m Model) View() string {
 	m.logger.Debug("Model View",
-		"height", m.height,
 		"width", m.width,
+		"gridWidth", m.gridWidth,
+		"gridHeight", m.gridHeight,
 		"rule", m.rule,
 		"boundary", m.boundary,
 		"language", m.language,
@@ -95,11 +105,12 @@ func (m Model) View() string {
 
 // handleWindowResize processes terminal window size changes
 func (m Model) handleWindowResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
-	m.width = msg.Width - 4
-	m.height = msg.Height - 6
-	// Reset cellular automaton with new dimensions
-	m.ca.Reset(m.rule, m.width, m.boundary)
-	m.gridRingBuffer = NewGridRingBuffer(m.height, m.width)
+	m.width = msg.Width
+	m.gridWidth = msg.Width - keepWidth
+	m.gridHeight = msg.Height - keepHeight
+	m.logger.Debug("Window size changed", "width", m.width, "gridWidth", m.gridWidth, "gridHeight", m.gridHeight)
+	m.ca.Reset(m.rule, m.gridWidth, m.boundary)
+	m.gridRingBuffer = NewGridRingBuffer(m.gridHeight, m.gridWidth)
 	m.gridRingBuffer.AddRow(m.ca.GetCurrentRow())
 	return m, nil
 }
@@ -233,7 +244,7 @@ func (m Model) RenderGrid() string {
 		}
 	}
 
-	for i := 0; i < m.height-len(rows); i++ {
+	for i := 0; i < m.gridHeight-len(rows); i++ {
 		m.gridBuffer.WriteString("\n")
 	}
 

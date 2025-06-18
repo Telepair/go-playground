@@ -8,6 +8,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+var (
+	keepWidth  = 4
+	keepHeight = 6
+)
+
 // Model represents the application state
 type Model struct {
 	game *GameOfLife
@@ -19,8 +24,9 @@ type Model struct {
 	currentStep   int
 	refreshRate   time.Duration
 	boundary      BoundaryType
-	height        int
 	width         int
+	gridHeight    int
+	gridWidth     int
 	buffer        strings.Builder
 	gridBuffer    strings.Builder
 	renderOptions RenderOptions
@@ -31,11 +37,17 @@ type Model struct {
 func NewModel(cfg Config) Model {
 	cfg.Check()
 
+	gridHeight := DefaultRows - keepHeight
+	gridWidth := DefaultCols - keepWidth
+
 	model := Model{
 		game:          NewGameOfLife(DefaultRows, DefaultCols, DefaultBoundary, DefaultPattern),
 		language:      cfg.Language,
 		pattern:       DefaultPattern,
 		boundary:      DefaultBoundary,
+		width:         DefaultCols,
+		gridHeight:    gridHeight,
+		gridWidth:     gridWidth,
 		paused:        false,
 		currentStep:   0,
 		renderOptions: NewRenderOptions(cfg.AliveColor, cfg.DeadColor, cfg.AliveChar, cfg.DeadChar),
@@ -76,8 +88,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View renders the current state
 func (m Model) View() string {
 	m.logger.Debug("Model View",
-		"height", m.height,
 		"width", m.width,
+		"gridWidth", m.gridWidth,
+		"gridHeight", m.gridHeight,
 		"pattern", m.pattern,
 		"boundary", m.boundary,
 		"language", m.language,
@@ -89,9 +102,10 @@ func (m Model) View() string {
 
 // handleWindowResize processes terminal window size changes
 func (m Model) handleWindowResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
-	m.width = msg.Width - 4
-	m.height = msg.Height - 6
-	m.game.Reset(m.height, m.width, m.boundary, m.pattern)
+	m.width = msg.Width
+	m.gridWidth = msg.Width - keepWidth
+	m.gridHeight = msg.Height - keepHeight
+	m.game.Reset(m.gridHeight, m.gridWidth, m.boundary, m.pattern)
 	return m, nil
 }
 
@@ -119,7 +133,7 @@ func (m Model) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case "p": // Cycle through patterns
 		m.pattern = Pattern((int(m.pattern) + 1) % 6) // We have 6 patterns
-		m.game.Reset(m.height, m.width, m.boundary, m.pattern)
+		m.game.Reset(m.gridHeight, m.gridWidth, m.boundary, m.pattern)
 
 	case "b": // Toggle boundary type
 		if m.boundary == BoundaryPeriodic {
@@ -127,11 +141,11 @@ func (m Model) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		} else {
 			m.boundary = BoundaryPeriodic
 		}
-		m.game.Reset(m.height, m.width, m.boundary, m.pattern)
+		m.game.Reset(m.gridHeight, m.gridWidth, m.boundary, m.pattern)
 
 	case "r": // Reset simulation
 		m.currentStep = 0
-		m.game.Reset(m.height, m.width, m.boundary, m.pattern)
+		m.game.Reset(m.gridHeight, m.gridWidth, m.boundary, m.pattern)
 	}
 
 	return m, nil

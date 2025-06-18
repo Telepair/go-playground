@@ -136,7 +136,7 @@ func (m Model) StatusLineView() string {
 	tableBuilder.WriteString(" | ")
 	tableBuilder.WriteString(labelStyle.Render(fmt.Sprintf(boundaryLabel, m.boundary.ToString(m.language))))
 	tableBuilder.WriteString(" | ")
-	tableBuilder.WriteString(labelStyle.Render(fmt.Sprintf(sizeLabel, m.height, m.width)))
+	tableBuilder.WriteString(labelStyle.Render(fmt.Sprintf(sizeLabel, m.gridHeight, m.gridWidth)))
 	tableBuilder.WriteString(" | ")
 	tableBuilder.WriteString(labelStyle.Render(status))
 
