@@ -6,7 +6,7 @@ _[Chinese Version / 中文版本](README_CN.md)_
 
 A Terminal User Interface (TUI) implementation of 1D cellular automata with highly customizable rendering options and **automatic terminal size detection**.
 
-[![asciicast](https://asciinema.org/a/723518.svg)](https://asciinema.org/a/723518)
+[![asciicast](https://asciinema.org/a/723614.svg)](https://asciinema.org/a/723614)
 
 ## Features
 

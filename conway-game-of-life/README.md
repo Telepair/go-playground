@@ -6,7 +6,7 @@ _[Chinese Version / 中文版本](README_CN.md)_
 
 A Terminal User Interface (TUI) implementation of Conway's Game of Life with multiple predefined patterns and highly customizable rendering options.
 
-[![asciicast](https://asciinema.org/a/723524.svg)](https://asciinema.org/a/723524)
+[![asciicast](https://asciinema.org/a/723612.svg)](https://asciinema.org/a/723612)
 
 ## Features
 

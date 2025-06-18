@@ -6,7 +6,7 @@ _[English Version / 英文版本](README.md)_
 
 一个高度可定制的一维元胞自动机终端用户界面(TUI)实现，**支持终端大小自动检测**。
 
-[![asciicast](https://asciinema.org/a/723518.svg)](https://asciinema.org/a/723518)
+[![asciicast](https://asciinema.org/a/723614.svg)](https://asciinema.org/a/723614)
 
 ## 功能特色
 

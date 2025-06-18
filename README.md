@@ -14,7 +14,7 @@ An interactive one-dimensional cellular automaton program with a beautiful termi
 
 **Demo:**
 
-[![asciicast](https://asciinema.org/a/723524.svg)](https://asciinema.org/a/723524)
+[![asciicast](https://asciinema.org/a/723614.svg)](https://asciinema.org/a/723614)
 
 ### 🎮 [Conway's Game of Life](./conway-game-of-life/)
 
@@ -24,7 +24,7 @@ A terminal user interface (TUI) implementation of Conway's Game of Life with mul
 
 **Demo:**
 
-[![asciicast](https://asciinema.org/a/723376.svg)](https://asciinema.org/a/723376)
+[![asciicast](https://asciinema.org/a/723612.svg)](https://asciinema.org/a/723612)
 
 ### 📊 [Mandelbrot Set](./mandelbrot-set/)
 

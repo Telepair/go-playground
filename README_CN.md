@@ -14,7 +14,7 @@ _[English Version / 英文版本](README.md)_
 
 **演示:**
 
-[![asciicast](https://asciinema.org/a/723524.svg)](https://asciinema.org/a/723524)
+[![asciicast](https://asciinema.org/a/723614.svg)](https://asciinema.org/a/723614)
 
 ### 🎮 [康威生命游戏 (Conway's Game of Life)](./conway-game-of-life/)
 
@@ -24,7 +24,7 @@ _[English Version / 英文版本](README.md)_
 
 **演示:**
 
-[![asciicast](https://asciinema.org/a/723376.svg)](https://asciinema.org/a/723376)
+[![asciicast](https://asciinema.org/a/723612.svg)](https://asciinema.org/a/723612)
 
 ### 📊 [曼德博集合 (Mandelbrot Set)](./mandelbrot-set/)
 
