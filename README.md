@@ -12,8 +12,6 @@ An interactive one-dimensional cellular automaton program with a beautiful termi
 
 [Wikipedia - Cellular Automaton](https://en.wikipedia.org/wiki/Cellular_automaton)
 
-**Demo:**
-
 [![asciicast](https://asciinema.org/a/723614.svg)](https://asciinema.org/a/723614)
 
 ### 🎮 [Conway's Game of Life](./conway-game-of-life/)
@@ -21,8 +19,6 @@ An interactive one-dimensional cellular automaton program with a beautiful termi
 A terminal user interface (TUI) implementation of Conway's Game of Life with multiple predefined patterns and highly customizable rendering options.
 
 [Wikipedia - Conway's Game of Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life)
-
-**Demo:**
 
 [![asciicast](https://asciinema.org/a/723612.svg)](https://asciinema.org/a/723612)
 
@@ -32,9 +28,15 @@ An interactive Mandelbrot set terminal user interface (TUI) implementation.
 
 [Wikipedia - Mandelbrot Set](https://en.wikipedia.org/wiki/Mandelbrot_set)
 
-**Demo:**
-
 [![asciicast](https://asciinema.org/a/723615.svg)](https://asciinema.org/a/723615)
+
+### 🚶 [Random Walk](./random-walk/)
+
+A terminal-based visualization of various random walk algorithms, including single walker, multi-walker, trail mode, Brownian motion, self-avoiding walk, and Lévy flight.
+
+[Wikipedia - Random Walk](https://en.wikipedia.org/wiki/Random_walk)
+
+[![asciicast](https://asciinema.org/a/723662.svg)](https://asciinema.org/a/723662)
 
 ## Project Structure
 
@@ -43,6 +45,7 @@ go-playground/
 ├── cellular-automaton/          # Cellular Automaton
 ├── conway-game-of-life/         # Conway Game of Life
 ├── mandelbrot-set/              # Mandelbrot Set
+├── random-walk/                 # Random Walk Visualization
 └── pkg/                         # Common packages
 ```
 
@@ -72,6 +75,9 @@ go-playground/
 
    # Mandelbrot Set
    asciinema rec ./demos/mandelbrot-set.cast --title "Mandelbrot Set" --command "./bin/mandelbrot-set"
+
+   # Random Walk
+   asciinema rec ./demos/random-walk.cast --title "Random Walk" --command "./bin/random-walk"
    ```
 
 3. Play the demo:
@@ -85,6 +91,9 @@ go-playground/
 
    # Mandelbrot Set
    asciinema play ./demos/mandelbrot-set.cast
+
+   # Random Walk
+   asciinema play ./demos/random-walk.cast
    ```
 
 4. Upload to asciinema.org (optional):
@@ -98,6 +107,9 @@ go-playground/
 
    # Mandelbrot Set
    asciinema upload ./demos/mandelbrot-set.cast
+
+   # Random Walk
+   asciinema upload ./demos/random-walk.cast
    ```
 
 ## Technical Features
@@ -113,7 +125,6 @@ Interesting projects that may be added in the future:
 
 - 🎵 **Audio Visualizer** - Audio spectrum visualization
 - 🌊 **Wave Function Collapse** - Wave Function Collapse algorithm
-- 🎲 **Random Walk** - Random walk visualization
 - 📊 **Data Structures Visualization** - Data structure visualization
 - 🔍 **Algorithm Visualization** - Sorting and searching algorithm visualization
 
