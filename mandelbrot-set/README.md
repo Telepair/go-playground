@@ -39,11 +39,15 @@ zₙ₊₁ = zₙ² + c
 ## Installation
 
 ```bash
-# Navigate to the mandelbrot-set directory
-cd mandelbrot-set
+# Clone the repository
+git clone <repository-url>
+cd go-playground/mandelbrot-set
+
+# Build the application
+go build -o mandelbrot-set
 
 # Run the program
-go run .
+./mandelbrot-set
 ```
 
 ## Usage
@@ -52,19 +56,19 @@ go run .
 
 ```bash
 # Basic usage
-go run .
+./mandelbrot-set
 
 # Custom settings
-go run . -zoom 2.0 -center-x -0.5 -center-y 0.0
+./mandelbrot-set -zoom 2.0 -center-x -0.5 -center-y 0.0
 
 # High iteration count with custom colors
-go run . -max-iter 100 -color-scheme 2
+./mandelbrot-set -max-iter 100 -color-scheme 2
 
 # Julia set mode
-go run . -julia -julia-c "0.285+0.01i"
+./mandelbrot-set -julia -julia-c "0.285+0.01i"
 
 # Chinese interface
-go run . -lang cn
+./mandelbrot-set -lang cn
 ```
 
 ### Keyboard Controls
@@ -117,24 +121,26 @@ The program includes several interesting preset locations:
 
 ### Command Line Parameters
 
-| Parameter       | Default         | Description                           |
-| --------------- | --------------- | ------------------------------------- |
-| `-rows`         | 30              | Number of rows in the display grid    |
-| `-cols`         | 80              | Number of columns in the display grid |
-| `-max-iter`     | 50              | Maximum number of iterations          |
-| `-zoom`         | 1.0             | Initial zoom level                    |
-| `-center-x`     | -0.5            | Initial center X coordinate           |
-| `-center-y`     | 0.0             | Initial center Y coordinate           |
-| `-color-scheme` | 0               | Color scheme (0-4)                    |
-| `-julia`        | false           | Start in Julia set mode               |
-| `-julia-c`      | "-0.7+0.27015i" | Julia set parameter                   |
-| `-lang`         | "en"            | Language (en/cn)                      |
+| Parameter           | Default         | Description                         |
+| ------------------- | --------------- | ----------------------------------- |
+| `-max-iter`         | 50              | Maximum number of iterations        |
+| `-zoom`             | 1.0             | Initial zoom level                  |
+| `-center-x`         | -0.5            | Initial center X coordinate         |
+| `-center-y`         | 0.0             | Initial center Y coordinate         |
+| `-color-scheme`     | 0               | Color scheme (0-4)                  |
+| `-julia`            | false           | Start in Julia set mode             |
+| `-julia-c`          | "-0.7+0.27015i" | Julia set parameter                 |
+| `-lang`             | "en"            | Language (en/cn)                    |
+| `-profile`          | false           | Enable profiling and monitoring     |
+| `-profile-port`     | 6060            | Profiling server port               |
+| `-profile-interval` | 5s              | Profile information output interval |
+| `-log-file`         | "debug.log"     | Log file path                       |
 
 ## Examples
 
 ### Exploring the Mandelbrot Set
 
-1. Start the program: `go run .`
+1. Start the program: `./mandelbrot-set`
 2. Use arrow keys to pan around
 3. Use `+` and `-` to zoom in and out
 4. Press `P` to jump to interesting locations
@@ -142,7 +148,7 @@ The program includes several interesting preset locations:
 
 ### Julia Set Exploration
 
-1. Start with Julia set: `go run . -julia`
+1. Start with Julia set: `./mandelbrot-set -julia`
 2. Or toggle mode with `M` key
 3. The Julia set uses a fixed parameter `c`
 4. Different `c` values create different Julia sets
@@ -152,7 +158,7 @@ The program includes several interesting preset locations:
 For detailed exploration:
 
 ```bash
-go run . -max-iter 200 -zoom 100 -center-x -0.7463 -center-y 0.1102
+./mandelbrot-set -max-iter 200 -zoom 100 -center-x -0.7463 -center-y 0.1102
 ```
 
 ## Mathematical Interest

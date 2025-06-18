@@ -34,7 +34,7 @@ go build -o cellular-automaton
 ### Basic Commands
 
 ```bash
-# Auto-detect terminal size (recommended)
+# Run with default settings
 ./cellular-automaton
 ./cellular-automaton -rule 30
 ./cellular-automaton -rule 90 -alive-color "#00FF00" -dead-color "#FF0000"
@@ -42,21 +42,22 @@ go build -o cellular-automaton
 ./cellular-automaton -rule 150
 ./cellular-automaton -rule 184 -alive-char '🚗'
 
-# Override with specific dimensions
-./cellular-automaton -rule 30 -rows 25 -cols 100
-./cellular-automaton -rule 90 -rows 40 -cols 120
+# Run with Chinese interface
+./cellular-automaton -lang cn
 ```
 
 ### Command Line Options
 
 - `-rule <number>`: Cellular automaton rule number (0-255, default: 30)
-- `-rows <number>`: Number of rows (auto-detect if not specified)
-- `-cols <number>`: Number of columns (auto-detect if not specified)
-- `-alive-color <color>`: Alive cell color (hex)
-- `-dead-color <color>`: Dead cell color (hex)
-- `-alive-char <char>`: Alive cell character
-- `-dead-char <char>`: Dead cell character
-- `-lang <en/cn>`: Language (default: en)
+- `-alive-color <color>`: Alive cell color in hex format (default: #FFFFFF)
+- `-dead-color <color>`: Dead cell color in hex format (default: #000000)
+- `-alive-char <char>`: Character for alive cells (default: █)
+- `-dead-char <char>`: Character for dead cells (default: space)
+- `-lang <en/cn>`: Interface language (default: en)
+- `-profile`: Enable profiling and monitoring (default: false)
+- `-profile-port <port>`: Profiling server port (default: 6060)
+- `-profile-interval <duration>`: Profile information output interval (default: 5s)
+- `-log-file <file>`: Log file path (default: debug.log)
 
 ## Control Keys
 
@@ -105,10 +106,9 @@ The interface features an optimized layout with status information at the top an
 
 The application automatically detects your terminal size and adapts the grid dimensions:
 
-- **Rows**: Terminal height minus UI elements (header, status, controls)
-- **Columns**: Terminal width minus padding
+- **Width**: Full terminal width is used for the cellular automaton grid
+- **Height**: Terminal height is used to display multiple generations
 - **Dynamic resizing**: Automatically adjusts when terminal is resized
-- **Manual override**: Use `-rows` and `-cols` to specify exact dimensions
 
 ### Boundary Types
 

@@ -50,29 +50,29 @@ go build -o conway-game-of-life
 # Run with default settings (random pattern)
 ./conway-game-of-life
 
-# Start with a glider pattern
-./conway-game-of-life -pattern glider
-
 # Custom colors and characters
 ./conway-game-of-life -alive-char "🟢" -dead-char "⚫"
+./conway-game-of-life -alive-color "#FF0000" -dead-color "#000033"
+
+# Chinese interface
+./conway-game-of-life -lang cn
 ```
 
 ### Command Line Options
 
-- `-rows <number>`: Number of rows in the grid (default: 30)
-- `-cols <number>`: Number of columns in the grid (default: 60)
 - `-alive-color <color>`: Alive cell color in hex format (default: #00FF00)
 - `-dead-color <color>`: Dead cell color in hex format (default: #000000)
 - `-alive-char <char>`: Character for alive cells (default: █)
 - `-dead-char <char>`: Character for dead cells (default: space)
 - `-lang <en/cn>`: Interface language (default: en)
+- `-profile`: Enable profiling and monitoring (default: false)
+- `-profile-port <port>`: Profiling server port (default: 6060)
+- `-profile-interval <duration>`: Profile information output interval (default: 5s)
+- `-log-file <file>`: Log file path (default: debug.log)
 
 ### Example Commands
 
 ```bash
-# On a large grid
-./conway-game-of-life -rows 50 -cols 100
-
 # Custom colors
 ./conway-game-of-life -alive-color "#FF0000" -dead-color "#000033"
 
@@ -81,6 +81,9 @@ go build -o conway-game-of-life
 
 # Chinese interface
 ./conway-game-of-life -lang cn
+
+# Enable profiling for performance monitoring
+./conway-game-of-life -profile -profile-port 8080
 ```
 
 ## Controls

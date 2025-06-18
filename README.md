@@ -111,7 +111,6 @@ go-playground/
 
 Interesting projects that may be added in the future:
 
-- 🧮 **Mandelbrot Set** - Mandelbrot set visualization
 - 🎵 **Audio Visualizer** - Audio spectrum visualization
 - 🌊 **Wave Function Collapse** - Wave Function Collapse algorithm
 - 🎲 **Random Walk** - Random walk visualization
@@ -137,7 +136,7 @@ Issues and Pull Requests are welcome! If you have interesting ideas or find bugs
 
 ## License
 
-This project is licensed under [License Name]. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 

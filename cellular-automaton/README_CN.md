@@ -34,7 +34,7 @@ go build -o cellular-automaton
 ### 基本命令
 
 ```bash
-# 自动检测终端大小（推荐）
+# 运行默认设置
 ./cellular-automaton
 ./cellular-automaton -rule 30
 ./cellular-automaton -rule 90 -alive-color "#00FF00" -dead-color "#FF0000"
@@ -42,21 +42,22 @@ go build -o cellular-automaton
 ./cellular-automaton -rule 150
 ./cellular-automaton -rule 184 -alive-char '🚗'
 
-# 指定具体尺寸（覆盖自动检测）
-./cellular-automaton -rule 30 -rows 25 -cols 100
-./cellular-automaton -rule 90 -rows 40 -cols 120
+# 使用中文界面
+./cellular-automaton -lang cn
 ```
 
 ### 命令行选项
 
 - `-rule <数字>`: 元胞自动机规则 (0-255，默认: 30)
-- `-rows <数字>`: 行数 (未指定时自动检测)
-- `-cols <数字>`: 列数 (未指定时自动检测)
 - `-alive-color <颜色>`: 活跃元胞颜色，十六进制格式 (默认: #FFFFFF)
 - `-dead-color <颜色>`: 死亡元胞颜色，十六进制格式 (默认: #000000)
 - `-alive-char <字符>`: 活跃元胞字符 (默认: █)
 - `-dead-char <字符>`: 死亡元胞字符 (默认: 空格)
 - `-lang <en/cn>`: 界面语言 (默认: en)
+- `-profile`: 启用性能分析和监控 (默认: false)
+- `-profile-port <端口>`: 性能分析服务器端口 (默认: 6060)
+- `-profile-interval <时间>`: 性能信息输出间隔 (默认: 5s)
+- `-log-file <文件>`: 日志文件路径 (默认: debug.log)
 
 ## 控制按键
 
@@ -105,10 +106,9 @@ go build -o cellular-automaton
 
 应用程序自动检测您的终端大小并适配网格尺寸：
 
-- **行数**: 终端高度减去 UI 元素占用空间（标题、状态、控制区）
-- **列数**: 终端宽度减去填充空间
+- **宽度**: 使用完整的终端宽度显示元胞自动机网格
+- **高度**: 使用终端高度显示多代演化
 - **动态调整**: 终端大小改变时自动重新调整
-- **手动覆盖**: 使用 `-rows` 和 `-cols` 指定精确尺寸
 
 ### 边界条件
 
