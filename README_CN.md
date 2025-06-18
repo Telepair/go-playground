@@ -38,6 +38,12 @@ _[English Version / 英文版本](README.md)_
 
 [![asciicast](https://asciinema.org/a/723662.svg)](https://asciinema.org/a/723662)
 
+### 🌧️ [数字雨 (Digital Rain)](./digital-rain/)
+
+著名的黑客帝国数字雨效果的终端用户界面实现，具有可自定义的颜色、速度和字符集。
+
+[Wikipedia - Matrix Digital Rain](https://en.wikipedia.org/wiki/Matrix_digital_rain)
+
 ## 项目结构
 
 ```
@@ -46,6 +52,7 @@ go-playground/
 ├── conway-game-of-life/         # 康威生命游戏
 ├── mandelbrot-set/              # 曼德博集合
 ├── random-walk/                 # 随机游走可视化
+├── digital-rain/                # 数字雨（黑客帝国效果）
 └── pkg/                         # 公共包
 ```
 
@@ -78,6 +85,9 @@ go-playground/
 
    # Random Walk
    asciinema rec ./random-walk.cast --title "Random Walk" --command "./bin/random-walk"
+
+   # Digital Rain
+   asciinema rec ./digital-rain.cast --title "Digital Rain" --command "./bin/digital-rain"
    ```
 
 3. 播放演示:
@@ -94,6 +104,9 @@ go-playground/
 
    # Random Walk
    asciinema play ./random-walk.cast
+
+   # Digital Rain
+   asciinema play ./digital-rain.cast
    ```
 
 4. 上传到 asciinema.org (可选):
@@ -110,6 +123,9 @@ go-playground/
 
    # Random Walk
    asciinema upload ./random-walk.cast
+
+   # Digital Rain
+   asciinema upload ./digital-rain.cast
    ```
 
 ## 技术特点

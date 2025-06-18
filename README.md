@@ -38,6 +38,12 @@ A terminal-based visualization of various random walk algorithms, including sing
 
 [![asciicast](https://asciinema.org/a/723662.svg)](https://asciinema.org/a/723662)
 
+### 🌧️ [Digital Rain](./digital-rain/)
+
+A Terminal User Interface implementation of the famous Matrix digital rain effect, featuring customizable colors, speeds, and character sets.
+
+[Wikipedia - Matrix Digital Rain](https://en.wikipedia.org/wiki/Matrix_digital_rain)
+
 ## Project Structure
 
 ```
@@ -46,6 +52,7 @@ go-playground/
 ├── conway-game-of-life/         # Conway Game of Life
 ├── mandelbrot-set/              # Mandelbrot Set
 ├── random-walk/                 # Random Walk Visualization
+├── digital-rain/                # Digital Rain (Matrix Effect)
 └── pkg/                         # Common packages
 ```
 
@@ -78,6 +85,9 @@ go-playground/
 
    # Random Walk
    asciinema rec ./demos/random-walk.cast --title "Random Walk" --command "./bin/random-walk"
+
+   # Digital Rain
+   asciinema rec ./demos/digital-rain.cast --title "Digital Rain" --command "./bin/digital-rain"
    ```
 
 3. Play the demo:
@@ -94,6 +104,9 @@ go-playground/
 
    # Random Walk
    asciinema play ./demos/random-walk.cast
+
+   # Digital Rain
+   asciinema play ./demos/digital-rain.cast
    ```
 
 4. Upload to asciinema.org (optional):
@@ -110,6 +123,9 @@ go-playground/
 
    # Random Walk
    asciinema upload ./demos/random-walk.cast
+
+   # Digital Rain
+   asciinema upload ./demos/digital-rain.cast
    ```
 
 ## Technical Features

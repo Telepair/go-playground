@@ -25,27 +25,8 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.go-version }}-
-            ${{ runner.os }}-go-
-
-      - name: Cache build artifacts
-        uses: actions/cache@v4
-        with:
-          path: bin/
-          key: ${{ runner.os }}-build-${{ matrix.go-version }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ matrix.go-version }}-
-
       - name: Build
-        run: make build-all
+        run: make build
 
       - name: Test
         run: make test

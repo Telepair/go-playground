@@ -19,17 +19,19 @@ help:
 	@echo "$(GREEN)Usage: make <target>$(RESET)"
 	@echo ""
 	@echo "$(GREEN)Build:$(RESET)"
-	@echo "  build-all                   Build all projects"
+	@echo "  build                       Build all projects"
 	@echo "  build-cellular-automaton    Build the cellular automaton"
 	@echo "  build-conway-game-of-life   Build the conway game of life"
 	@echo "  build-mandelbrot-set        Build the mandelbrot set"
 	@echo "  build-random-walk           Build the random walk visualization"
+	@echo "  build-digital-rain          Build the digital rain"
 	@echo ""
 	@echo "$(GREEN)Demos:$(RESET)" 
 	@echo "  cellular-automaton       Run the cellular automaton"
 	@echo "  conway-game-of-life      Run the conway game of life"
 	@echo "  mandelbrot-set           Run the mandelbrot set fractal visualization"
 	@echo "  random-walk              Run the random walk visualization"
+	@echo "  digital-rain             Run the digital rain (Matrix effect)"
 	@echo ""
 	@echo "$(GREEN)Test:$(RESET)"
 	@echo "  test                        Test all projects"
@@ -37,8 +39,8 @@ help:
 	@echo "  clean                       Clean binary and cache"
 
 # Build targets
-.PHONY: build-all
-build-all: build-cellular-automaton build-conway-game-of-life build-mandelbrot-set build-random-walk
+.PHONY: build
+build: build-cellular-automaton build-conway-game-of-life build-mandelbrot-set build-random-walk build-digital-rain
 
 .PHONY: build-cellular-automaton
 build-cellular-automaton: tidy fmt vet lint osv 
@@ -67,6 +69,13 @@ build-random-walk: tidy fmt vet lint osv
 	@mkdir -p bin
 	go build -ldflags="-s -w" -o ./bin/random-walk ./random-walk
 	@echo "  >  Random walk built successfully."
+
+.PHONY: build-digital-rain
+build-digital-rain: tidy fmt vet lint osv 
+	@echo "  >  Building digital rain..."
+	@mkdir -p bin
+	go build -ldflags="-s -w" -o ./bin/digital-rain ./digital-rain
+	@echo "  >  Digital rain built successfully."
 
 .PHONY: test
 test: tidy fmt vet lint osv
@@ -137,3 +146,9 @@ mandelbrot-set: build-mandelbrot-set
 random-walk: build-random-walk
 	@echo "Demo Random Walk: Various random walk algorithms..."
 	./bin/random-walk
+
+# Digital Rain demos
+.PHONY: digital-rain
+digital-rain: build-digital-rain
+	@echo "Demo Digital Rain: Matrix-style falling characters..."
+	./bin/digital-rain
