@@ -1,7 +1,8 @@
 package main
 
 import (
-	"math/cmplx"
+	"runtime"
+	"sync"
 )
 
 // MandelbrotSet represents the Mandelbrot/Julia set calculator
@@ -65,42 +66,78 @@ func (m *MandelbrotSet) Calculate() {
 	stepReal := (maxReal - minReal) / float64(m.width)
 	stepImag := (maxImag - minImag) / float64(m.height)
 
-	// Compute each point in the grid
-	for y := 0; y < m.height; y++ {
-		for x := 0; x < m.width; x++ {
-			// Convert screen coordinates to complex plane
-			realPart := minReal + float64(x)*stepReal
-			imagPart := minImag + float64(y)*stepImag
-			c := complex(realPart, imagPart)
-
-			// Calculate iterations for this point
-			if m.julia {
-				m.grid[y][x] = m.juliaIterations(c)
-			} else {
-				m.grid[y][x] = m.mandelbrotIterations(c)
-			}
-		}
+	// Use parallel computation for better performance
+	numWorkers := runtime.NumCPU()
+	rowsPerWorker := m.height / numWorkers
+	if rowsPerWorker < 1 {
+		rowsPerWorker = 1
+		numWorkers = m.height
 	}
+
+	var wg sync.WaitGroup
+	wg.Add(numWorkers)
+
+	for worker := 0; worker < numWorkers; worker++ {
+		startY := worker * rowsPerWorker
+		endY := startY + rowsPerWorker
+		if worker == numWorkers-1 {
+			endY = m.height // Handle remainder rows
+		}
+
+		go func(startY, endY int) {
+			defer wg.Done()
+
+			for y := startY; y < endY; y++ {
+				imagPart := minImag + float64(y)*stepImag
+				for x := 0; x < m.width; x++ {
+					realPart := minReal + float64(x)*stepReal
+					c := complex(realPart, imagPart)
+
+					// Calculate iterations for this point
+					if m.julia {
+						m.grid[y][x] = m.juliaIterations(c)
+					} else {
+						m.grid[y][x] = m.mandelbrotIterations(c)
+					}
+				}
+			}
+		}(startY, endY)
+	}
+
+	wg.Wait()
 }
 
 // mandelbrotIterations calculates the number of iterations for a point in the Mandelbrot set
 func (m *MandelbrotSet) mandelbrotIterations(c complex128) int {
-	z := complex(0, 0)
+	// Extract real and imaginary parts once to avoid repeated function calls
+	cr := real(c)
+	ci := imag(c)
+
+	// Use real number arithmetic instead of complex operations for better performance
+	zr, zi := 0.0, 0.0
 
 	for i := 0; i < m.maxIter; i++ {
-		absZ := cmplx.Abs(z)
-		if absZ > 2.0 {
+		// Check escape condition using optimized calculation
+		// |z|^2 = zr^2 + zi^2, avoid sqrt by comparing squared values
+		zr2 := zr * zr
+		zi2 := zi * zi
+
+		if zr2+zi2 > 4.0 { // 4.0 is 2.0^2
 			return i
 		}
+
 		// Additional overflow protection
-		if absZ > 1e10 {
+		if zr2+zi2 > 1e20 {
 			return i
 		}
-		z = z*z + c
-		// Check for NaN or infinity
-		if cmplx.IsNaN(z) || cmplx.IsInf(z) {
-			return i
-		}
+
+		// Calculate z = z^2 + c using real arithmetic
+		// (zr + zi*i)^2 = zr^2 - zi^2 + 2*zr*zi*i
+		znewR := zr2 - zi2 + cr
+		znewI := 2*zr*zi + ci
+
+		zr = znewR
+		zi = znewI
 	}
 
 	return m.maxIter
@@ -108,20 +145,34 @@ func (m *MandelbrotSet) mandelbrotIterations(c complex128) int {
 
 // juliaIterations calculates the number of iterations for a point in the Julia set
 func (m *MandelbrotSet) juliaIterations(z complex128) int {
+	// Extract Julia constant components once
+	cr := real(m.juliaC)
+	ci := imag(m.juliaC)
+
+	// Use real number arithmetic
+	zr := real(z)
+	zi := imag(z)
+
 	for i := 0; i < m.maxIter; i++ {
-		absZ := cmplx.Abs(z)
-		if absZ > 2.0 {
+		// Check escape condition using optimized calculation
+		zr2 := zr * zr
+		zi2 := zi * zi
+
+		if zr2+zi2 > 4.0 {
 			return i
 		}
+
 		// Additional overflow protection
-		if absZ > 1e10 {
+		if zr2+zi2 > 1e20 {
 			return i
 		}
-		z = z*z + m.juliaC
-		// Check for NaN or infinity
-		if cmplx.IsNaN(z) || cmplx.IsInf(z) {
-			return i
-		}
+
+		// Calculate z = z^2 + juliaC using real arithmetic
+		znewR := zr2 - zi2 + cr
+		znewI := 2*zr*zi + ci
+
+		zr = znewR
+		zi = znewI
 	}
 
 	return m.maxIter

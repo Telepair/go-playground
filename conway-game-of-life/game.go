@@ -230,38 +230,76 @@ func (g *GameOfLife) countNeighbors(row, col int) int {
 
 	count := 0
 
-	// Define neighbor offsets for direct access
-	neighbors := [8][2]int{
-		{-1, -1}, {-1, 0}, {-1, 1},
-		{0, -1}, {0, 1},
-		{1, -1}, {1, 0}, {1, 1},
-	}
+	// Optimized boundary calculations to avoid repeated modulo operations
+	if g.boundary == BoundaryPeriodic {
+		// Pre-calculate boundary indices
+		rowMinus1 := row - 1
+		if rowMinus1 < 0 {
+			rowMinus1 = g.rows - 1
+		}
+		rowPlus1 := row + 1
+		if rowPlus1 >= g.rows {
+			rowPlus1 = 0
+		}
 
-	for _, offset := range neighbors {
-		neighborRow := row + offset[0]
-		neighborCol := col + offset[1]
+		colMinus1 := col - 1
+		if colMinus1 < 0 {
+			colMinus1 = g.cols - 1
+		}
+		colPlus1 := col + 1
+		if colPlus1 >= g.cols {
+			colPlus1 = 0
+		}
 
-		// Handle boundary conditions
-		if g.boundary == BoundaryPeriodic {
-			// Wrap around for periodic boundary
-			neighborRow = (neighborRow + g.rows) % g.rows
-			neighborCol = (neighborCol + g.cols) % g.cols
+		// Direct checks without loops
+		if g.currentGrid[rowMinus1][colMinus1] {
+			count++
+		}
+		if g.currentGrid[rowMinus1][col] {
+			count++
+		}
+		if g.currentGrid[rowMinus1][colPlus1] {
+			count++
+		}
+		if g.currentGrid[row][colMinus1] {
+			count++
+		}
+		if g.currentGrid[row][colPlus1] {
+			count++
+		}
+		if g.currentGrid[rowPlus1][colMinus1] {
+			count++
+		}
+		if g.currentGrid[rowPlus1][col] {
+			count++
+		}
+		if g.currentGrid[rowPlus1][colPlus1] {
+			count++
+		}
+	} else {
+		// Fixed boundary: direct checks with bounds validation
+		rowStart := row - 1
+		if rowStart < 0 {
+			rowStart = 0
+		}
+		rowEnd := row + 1
+		if rowEnd >= g.rows {
+			rowEnd = g.rows - 1
+		}
 
-			// Additional bounds check for safety after modulo operation
-			// Note: modulo operation can still result in negative values in some Go versions
-			if neighborRow >= 0 && neighborRow < g.rows &&
-				neighborCol >= 0 && neighborCol < g.cols &&
-				g.currentGrid != nil && len(g.currentGrid) > neighborRow &&
-				len(g.currentGrid[neighborRow]) > neighborCol {
-				if g.currentGrid[neighborRow][neighborCol] {
-					count++
-				}
-			}
-		} else {
-			// Fixed boundary: skip out-of-bounds cells
-			if neighborRow >= 0 && neighborRow < g.rows &&
-				neighborCol >= 0 && neighborCol < g.cols {
-				if g.currentGrid[neighborRow][neighborCol] {
+		colStart := col - 1
+		if colStart < 0 {
+			colStart = 0
+		}
+		colEnd := col + 1
+		if colEnd >= g.cols {
+			colEnd = g.cols - 1
+		}
+
+		// Count neighbors in the valid range
+		for r := rowStart; r <= rowEnd; r++ {
+			for c := colStart; c <= colEnd; c++ {
+				if (r != row || c != col) && g.currentGrid[r][c] {
 					count++
 				}
 			}
