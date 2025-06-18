@@ -40,11 +40,10 @@ An interactive Mandelbrot set terminal user interface (TUI) implementation.
 
 ```
 go-playground/
-├── README.md                    # Main project documentation
 ├── cellular-automaton/          # Cellular Automaton
 ├── conway-game-of-life/         # Conway Game of Life
-├── LICENSE                     # Project license
-└── .gitignore                 # Git ignore file
+├── mandelbrot-set/              # Mandelbrot Set
+└── pkg/                         # Common packages
 ```
 
 ## Using Asciinema to record demos
@@ -70,6 +69,9 @@ go-playground/
 
    # Conway Game of Life
    asciinema rec ./demos/conway-game-of-life.cast --title "Conway Game of Life" --command "./bin/conway-game-of-life"
+
+   # Mandelbrot Set
+   asciinema rec ./demos/mandelbrot-set.cast --title "Mandelbrot Set" --command "./bin/mandelbrot-set"
    ```
 
 3. Play the demo:
@@ -80,6 +82,9 @@ go-playground/
 
    # Conway Game of Life
    asciinema play ./demos/conway-game-of-life.cast
+
+   # Mandelbrot Set
+   asciinema play ./demos/mandelbrot-set.cast
    ```
 
 4. Upload to asciinema.org (optional):
@@ -90,11 +95,13 @@ go-playground/
 
    # Conway Game of Life
    asciinema upload ./demos/conway-game-of-life.cast
+
+   # Mandelbrot Set
+   asciinema upload ./demos/mandelbrot-set.cast
    ```
 
 ## Technical Features
 
-- **Modern Go Development**: Uses the latest features of Go 1.24+
 - **Elegant User Interface**: Beautiful terminal interfaces built with [Bubble Tea](https://github.com/charmbracelet/bubbletea) and [Lipgloss](https://github.com/charmbracelet/lipgloss)
 - **Independent Module Design**: Each sub-project has its own `go.mod` for easy management and usage
 - **Clear Code Structure**: Focus on code readability and maintainability

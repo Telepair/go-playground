@@ -40,11 +40,10 @@ _[English Version / 英文版本](README.md)_
 
 ```
 go-playground/
-├── README.md                    # 主项目说明
 ├── cellular-automaton/          # 元胞自动机
 ├── conway-game-of-life/         # 康威生命游戏
-├── LICENSE                     # 项目许可证
-└── .gitignore                 # Git 忽略文件
+├── mandelbrot-set/              # 曼德博集合
+└── pkg/                         # 公共包
 ```
 
 ## 使用 Asciinema 录制演示
@@ -70,6 +69,9 @@ go-playground/
 
    # Conway Game of Life
    asciinema rec ./conway-game-of-life.cast --title "Conway Game of Life" --command "./bin/conway-game-of-life"
+
+   # Mandelbrot Set
+   asciinema rec ./mandelbrot-set.cast --title "Mandelbrot Set" --command "./bin/mandelbrot-set"
    ```
 
 3. 播放演示:
@@ -80,6 +82,9 @@ go-playground/
 
    # Conway Game of Life
    asciinema play ./conway-game-of-life.cast
+
+   # Mandelbrot Set
+   asciinema play ./mandelbrot-set.cast
    ```
 
 4. 上传到 asciinema.org (可选):
@@ -90,11 +95,13 @@ go-playground/
 
    # Conway Game of Life
    asciinema upload ./conway-game-of-life.cast
+
+   # Mandelbrot Set
+   asciinema upload ./mandelbrot-set.cast
    ```
 
 ## 技术特点
 
-- **现代 Go 开发**：使用 Go 1.24+ 的最新特性
 - **优雅的用户界面**：使用 [Bubble Tea](https://github.com/charmbracelet/bubbletea) 和 [Lipgloss](https://github.com/charmbracelet/lipgloss) 构建美观的终端界面
 - **独立模块设计**：每个子项目都有独立的 `go.mod`，方便管理和使用
 - **清晰的代码结构**：注重代码可读性和可维护性
@@ -104,7 +111,6 @@ go-playground/
 
 未来可能会添加的有趣项目：
 
-- 🧮 **曼德博集合 (Mandelbrot Set)** - 曼德博集合可视化
 - 🎵 **音频可视化器 (Audio Visualizer)** - 音频频谱可视化
 - 🌊 **波函数坍缩 (Wave Function Collapse)** - 波函数坍缩算法
 - 🎲 **随机游走 (Random Walk)** - 随机游走可视化
