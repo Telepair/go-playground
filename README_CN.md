@@ -12,8 +12,6 @@ _[English Version / 英文版本](README.md)_
 
 [Wikipedia - Cellular Automaton](https://en.wikipedia.org/wiki/Cellular_automaton)
 
-**演示:**
-
 [![asciicast](https://asciinema.org/a/723614.svg)](https://asciinema.org/a/723614)
 
 ### 🎮 [康威生命游戏 (Conway's Game of Life)](./conway-game-of-life/)
@@ -21,8 +19,6 @@ _[English Version / 英文版本](README.md)_
 一个具有多种预定义模式和高度可定制渲染选项的康威生命游戏终端用户界面(TUI)实现。
 
 [Wikipedia - Conway's Game of Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life)
-
-**演示:**
 
 [![asciicast](https://asciinema.org/a/723612.svg)](https://asciinema.org/a/723612)
 
@@ -32,9 +28,15 @@ _[English Version / 英文版本](README.md)_
 
 [Wikipedia - Mandelbrot Set](https://en.wikipedia.org/wiki/Mandelbrot_set)
 
-**演示:**
-
 [![asciicast](https://asciinema.org/a/723615.svg)](https://asciinema.org/a/723615)
+
+### 🚶 [随机游走 (Random Walk)](./random-walk/)
+
+基于终端的随机游走算法可视化工具，包括单粒子、多粒子、轨迹模式、布朗运动、自避行走和莱维飞行。
+
+[Wikipedia - Random Walk](https://en.wikipedia.org/wiki/Random_walk)
+
+[![asciicast](https://asciinema.org/a/723662.svg)](https://asciinema.org/a/723662)
 
 ## 项目结构
 
@@ -43,6 +45,7 @@ go-playground/
 ├── cellular-automaton/          # 元胞自动机
 ├── conway-game-of-life/         # 康威生命游戏
 ├── mandelbrot-set/              # 曼德博集合
+├── random-walk/                 # 随机游走可视化
 └── pkg/                         # 公共包
 ```
 
@@ -72,6 +75,9 @@ go-playground/
 
    # Mandelbrot Set
    asciinema rec ./mandelbrot-set.cast --title "Mandelbrot Set" --command "./bin/mandelbrot-set"
+
+   # Random Walk
+   asciinema rec ./random-walk.cast --title "Random Walk" --command "./bin/random-walk"
    ```
 
 3. 播放演示:
@@ -85,6 +91,9 @@ go-playground/
 
    # Mandelbrot Set
    asciinema play ./mandelbrot-set.cast
+
+   # Random Walk
+   asciinema play ./random-walk.cast
    ```
 
 4. 上传到 asciinema.org (可选):
@@ -98,6 +107,9 @@ go-playground/
 
    # Mandelbrot Set
    asciinema upload ./mandelbrot-set.cast
+
+   # Random Walk
+   asciinema upload ./random-walk.cast
    ```
 
 ## 技术特点
@@ -113,7 +125,6 @@ go-playground/
 
 - 🎵 **音频可视化器 (Audio Visualizer)** - 音频频谱可视化
 - 🌊 **波函数坍缩 (Wave Function Collapse)** - 波函数坍缩算法
-- 🎲 **随机游走 (Random Walk)** - 随机游走可视化
 - 📊 **数据结构可视化 (Data Structures Visualization)** - 数据结构可视化
 - 🔍 **算法可视化 (Algorithm Visualization)** - 排序和搜索算法可视化
 

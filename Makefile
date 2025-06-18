@@ -17,26 +17,28 @@ RESET := \033[0m
 .PHONY: help
 help:
 	@echo "$(GREEN)Usage: make <target>$(RESET)"
+	@echo ""
+	@echo "$(GREEN)Build:$(RESET)"
 	@echo "  build-all                   Build all projects"
 	@echo "  build-cellular-automaton    Build the cellular automaton"
 	@echo "  build-conway-game-of-life   Build the conway game of life"
 	@echo "  build-mandelbrot-set        Build the mandelbrot set"
+	@echo "  build-random-walk           Build the random walk visualization"
+	@echo ""
+	@echo "$(GREEN)Demos:$(RESET)" 
+	@echo "  cellular-automaton       Run the cellular automaton"
+	@echo "  conway-game-of-life      Run the conway game of life"
+	@echo "  mandelbrot-set           Run the mandelbrot set fractal visualization"
+	@echo "  random-walk              Run the random walk visualization"
+	@echo ""
+	@echo "$(GREEN)Test:$(RESET)"
 	@echo "  test                        Test all projects"
 	@echo "  bench                       Run benchmarks"
 	@echo "  clean                       Clean binary and cache"
-	@echo ""
-	@echo "$(GREEN)Cellular Automaton:$(RESET)" 
-	@echo "  cellular-automaton       Run the cellular automaton"
-	@echo ""
-	@echo "$(GREEN)Conway Game of Life:$(RESET)"
-	@echo "  conway-game-of-life             Run the conway game of life"
-	@echo ""
-	@echo "$(GREEN)Mandelbrot Set:$(RESET)"
-	@echo "  mandelbrot-set              Run the mandelbrot set fractal visualization"
 
 # Build targets
 .PHONY: build-all
-build-all: build-cellular-automaton build-conway-game-of-life build-mandelbrot-set
+build-all: build-cellular-automaton build-conway-game-of-life build-mandelbrot-set build-random-walk
 
 .PHONY: build-cellular-automaton
 build-cellular-automaton: tidy fmt vet lint osv 
@@ -59,6 +61,12 @@ build-mandelbrot-set: tidy fmt vet lint osv
 	go build -ldflags="-s -w" -o ./bin/mandelbrot-set ./mandelbrot-set
 	@echo "  >  Mandelbrot set built successfully."
 
+.PHONY: build-random-walk
+build-random-walk: tidy fmt vet lint osv 
+	@echo "  >  Building random walk..."
+	@mkdir -p bin
+	go build -ldflags="-s -w" -o ./bin/random-walk ./random-walk
+	@echo "  >  Random walk built successfully."
 
 .PHONY: test
 test: tidy fmt vet lint osv
@@ -123,3 +131,9 @@ conway-game-of-life: build-conway-game-of-life
 mandelbrot-set: build-mandelbrot-set
 	@echo "Demo Mandelbrot Set: Fractal Visualization..."
 	./bin/mandelbrot-set
+
+# Random Walk demos
+.PHONY: random-walk
+random-walk: build-random-walk
+	@echo "Demo Random Walk: Various random walk algorithms..."
+	./bin/random-walk
