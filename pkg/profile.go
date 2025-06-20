@@ -17,7 +17,7 @@ func StartProfile(ctx context.Context, port int) {
 	}
 
 	go func() {
-		slog.Info("Starting pprof server on http://localhost%s/debug/pprof/", "port", port)
+		slog.Debug("Starting pprof server on http://localhost%s/debug/pprof/", "port", port)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("Failed to start pprof server", "error", err)
 		}
@@ -25,7 +25,7 @@ func StartProfile(ctx context.Context, port int) {
 
 	// Wait for context cancellation
 	<-ctx.Done()
-	slog.Info("Stopping pprof server")
+	slog.Debug("Stopping pprof server")
 
 	// Create a timeout context for graceful shutdown
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -35,7 +35,7 @@ func StartProfile(ctx context.Context, port int) {
 	if err := server.Shutdown(shutdownCtx); err != nil {
 		slog.Error("Failed to gracefully shutdown pprof server", "error", err)
 	} else {
-		slog.Info("Pprof server stopped gracefully")
+		slog.Debug("Pprof server stopped gracefully")
 	}
 }
 
@@ -44,12 +44,12 @@ func StartWatchdog(ctx context.Context, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
-	slog.Info("Starting watchdog with interval", "interval", interval)
+	slog.Debug("Starting watchdog with interval", "interval", interval)
 
 	for {
 		select {
 		case <-ctx.Done():
-			slog.Info("Stopping watchdog")
+			slog.Debug("Stopping watchdog")
 			return
 		case <-ticker.C:
 			printRuntimeStats()
@@ -63,7 +63,7 @@ func printRuntimeStats() {
 	runtime.ReadMemStats(&m)
 
 	logger := slog.With("module", "watchdog")
-	logger.Info("Runtime Stats",
+	logger.Debug("Runtime Stats",
 		"goroutines", runtime.NumGoroutine(),
 		"alloc_mb", bToMb(m.Alloc),
 		"total_alloc_mb", bToMb(m.TotalAlloc),

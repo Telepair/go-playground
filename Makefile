@@ -1,5 +1,6 @@
 # Binary output directory and name
 BINARY_DIR := $(shell pwd)/bin
+BINARY_NAME := go-playground
 
 # Tools
 GOIMPORTS := $(shell go env GOPATH)/bin/goimports
@@ -19,12 +20,13 @@ help:
 	@echo "$(GREEN)Usage: make <target>$(RESET)"
 	@echo ""
 	@echo "$(GREEN)Build:$(RESET)"
-	@echo "  build                       Build all projects"
-	@echo "  build-cellular-automaton    Build the cellular automaton"
-	@echo "  build-conway-game-of-life   Build the conway game of life"
-	@echo "  build-mandelbrot-set        Build the mandelbrot set"
-	@echo "  build-random-walk           Build the random walk visualization"
-	@echo "  build-digital-rain          Build the digital rain"
+	@echo "  build                       Build the main go-playground binary"
+	@echo "  build-all                   Build all standalone projects (legacy)"
+	@echo "  build-cellular-automaton    Build the cellular automaton (standalone)"
+	@echo "  build-conway-game-of-life   Build the conway game of life (standalone)"
+	@echo "  build-mandelbrot-set        Build the mandelbrot set (standalone)"
+	@echo "  build-random-walk           Build the random walk visualization (standalone)"
+	@echo "  build-digital-rain          Build the digital rain (standalone)"
 	@echo ""
 	@echo "$(GREEN)Demos:$(RESET)" 
 	@echo "  cellular-automaton       Run the cellular automaton"
@@ -37,10 +39,20 @@ help:
 	@echo "  test                        Test all projects"
 	@echo "  bench                       Run benchmarks"
 	@echo "  clean                       Clean binary and cache"
+	@echo ""
+	@echo "$(GREEN)Quick Start:$(RESET)"
+	@echo "  run                         Build and run go-playground (show help)"
 
 # Build targets
 .PHONY: build
-build: build-cellular-automaton build-conway-game-of-life build-mandelbrot-set build-random-walk build-digital-rain
+build: tidy fmt vet lint osv
+	@echo "  >  Building go-playground..."
+	@mkdir -p bin
+	go build -ldflags="-s -w" -o ./bin/$(BINARY_NAME) .
+	@echo "  >  go-playground built successfully."
+
+.PHONY: build-all
+build-all: build-cellular-automaton build-conway-game-of-life build-mandelbrot-set build-random-walk build-digital-rain
 
 .PHONY: build-cellular-automaton
 build-cellular-automaton: tidy fmt vet lint osv 
@@ -119,36 +131,46 @@ osv:
 
 .PHONY: clean
 clean:
-	@echo "  >  Cleaning cellular automaton..."
+	@echo "  >  Cleaning go-playground..."
 	git clean -xdf
-	@echo "  >  Cellular automaton cleaned successfully."
+	@echo "  >  go-playground cleaned successfully."
+
+# Quick start
+.PHONY: run
+run: build
+	@echo "  >  Running go-playground..."
+	./bin/$(BINARY_NAME) --help
 
 # Cellular Automaton demos
 .PHONY: cellular-automaton
-cellular-automaton: build-cellular-automaton
+cellular-automaton: build
 	@echo "Demo Cellular Automaton: Basic Rule 30..."
-	./bin/cellular-automaton
+	./bin/$(BINARY_NAME) cellular-automaton
 
 # Conway Game of Life demos
 .PHONY: conway-game-of-life
 conway-game-of-life: build-conway-game-of-life
 	@echo "Demo Conway Game of Life: Default Settings..."
 	./bin/conway-game-of-life
+	@echo "$(YELLOW)Note: This demo is still using standalone binary. Run 'make build' and use './bin/$(BINARY_NAME) conwayGameOfLife' when migrated to cobra.$(RESET)"
 
 # Mandelbrot Set demos
 .PHONY: mandelbrot-set
 mandelbrot-set: build-mandelbrot-set
 	@echo "Demo Mandelbrot Set: Fractal Visualization..."
 	./bin/mandelbrot-set
+	@echo "$(YELLOW)Note: This demo is still using standalone binary. Run 'make build' and use './bin/$(BINARY_NAME) mandelbrotSet' when migrated to cobra.$(RESET)"
 
 # Random Walk demos
 .PHONY: random-walk
 random-walk: build-random-walk
 	@echo "Demo Random Walk: Various random walk algorithms..."
 	./bin/random-walk
+	@echo "$(YELLOW)Note: This demo is still using standalone binary. Run 'make build' and use './bin/$(BINARY_NAME) randomWalk' when migrated to cobra.$(RESET)"
 
 # Digital Rain demos
 .PHONY: digital-rain
 digital-rain: build-digital-rain
 	@echo "Demo Digital Rain: Matrix-style falling characters..."
 	./bin/digital-rain
+	@echo "$(YELLOW)Note: This demo is still using standalone binary. Run 'make build' and use './bin/$(BINARY_NAME) digitalRain' when migrated to cobra.$(RESET)"
