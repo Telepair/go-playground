@@ -58,13 +58,21 @@ Example rules:
 		// Get flags
 		rule, _ := cmd.Flags().GetInt("rule")
 		boundary, _ := cmd.Flags().GetInt("boundary")
+		aliveColor, _ := cmd.Flags().GetString("alive-color")
+		deadColor, _ := cmd.Flags().GetString("dead-color")
+		aliveChar, _ := cmd.Flags().GetString("alive-char")
+		deadChar, _ := cmd.Flags().GetString("dead-char")
 
 		// Create the cellular automaton engine
 		ca := cellularautomaton.New(
-			rule,
-			max(ui.DefaultHeight, 1),
-			max(ui.DefaultWidth, 1),
-			cellularautomaton.BoundaryType(boundary),
+			cellularautomaton.Config{
+				Rule:       rule,
+				Boundary:   boundary,
+				AliveColor: aliveColor,
+				DeadColor:  deadColor,
+				AliveChar:  aliveChar,
+				DeadChar:   deadChar,
+			},
 		)
 
 		// Run the UI with the engine
@@ -77,17 +85,10 @@ Example rules:
 func init() {
 	rootCmd.AddCommand(cellularAutomatonCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// cellularAutomatonCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// cellularAutomatonCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	// Local flags specific to cellular automaton
 	cellularAutomatonCmd.Flags().Int("rule", 30, "Cellular automaton rule number (0-255)")
 	cellularAutomatonCmd.Flags().Int("boundary", 0, "Boundary condition type (0=Periodic, 1=Fixed, 2=Reflect)")
+	cellularAutomatonCmd.Flags().String("alive-char", "█", "Alive cell character")
+	cellularAutomatonCmd.Flags().String("dead-char", " ", "Dead cell character")
+	cellularAutomatonCmd.Flags().String("alive-color", "#00FF00", "Alive cell color (hex)")
+	cellularAutomatonCmd.Flags().String("dead-color", "#000000", "Dead cell color (hex)")
 }

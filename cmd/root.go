@@ -49,10 +49,6 @@ const (
 
 var (
 	lang            string
-	aliveColor      string
-	deadColor       string
-	aliveChar       rune
-	deadChar        rune
 	refreshInterval time.Duration
 	profile         bool
 	profilePort     int
@@ -77,9 +73,6 @@ written in Go. It includes various interesting visual demonstrations such as:
 
 Each visualization supports customization options including colors, characters,
 refresh rates, and language settings (English/Chinese).`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -94,10 +87,6 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().StringVar(&lang, "lang", ui.DefaultLang, "Language (en/cn)")
 	rootCmd.PersistentFlags().DurationVar(&refreshInterval, "refresh-interval", ui.DefaultRefreshInterval, "Refresh interval")
-	rootCmd.PersistentFlags().StringVar(&aliveColor, "alive-color", ui.DefaultAliveColor, "Alive cell color (hex)")
-	rootCmd.PersistentFlags().StringVar(&deadColor, "dead-color", ui.DefaultDeadColor, "Dead cell color (hex)")
-	rootCmd.PersistentFlags().Int32Var(&aliveChar, "alive-char", ui.DefaultAliveChar, "Alive cell character")
-	rootCmd.PersistentFlags().Int32Var(&deadChar, "dead-char", ui.DefaultDeadChar, "Dead cell character")
 	rootCmd.PersistentFlags().BoolVar(&profile, "profile", false, "Enable profiling and monitoring")
 	rootCmd.PersistentFlags().IntVar(&profilePort, "profile-port", DefaultProfilePort, "Profiling server port")
 	rootCmd.PersistentFlags().DurationVar(&profileInterval, "profile-interval", DefaultProfileInterval, "Profile information output interval")

@@ -6,103 +6,45 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/telepair/go-playground/pkg/ui"
 )
 
 var _ ui.StepEngine = (*CellularAutomaton)(nil)
 
-var (
-	// HeaderCN is the Chinese header text for cellular automaton
-	HeaderCN = "🚀 元胞自动机 🚀"
-	// HeaderEN is the English header text for cellular automaton
-	HeaderEN = "🚀 Cellular Automaton 🚀"
-
-	// DefaultAliveColor is the default alive cell color
-	DefaultAliveColor = lipgloss.Color("#FFFFFF")
-	// DefaultDeadColor is the default dead cell color
-	DefaultDeadColor = lipgloss.Color("#000000")
-	// DefaultAliveChar is the default alive cell character
-	DefaultAliveChar = '█'
-	// DefaultDeadChar is the default dead cell character
-	DefaultDeadChar = ' '
-
-	// Rules is the default rules for cellular automaton
-	Rules = []Rule{
-		{Value: 30},
-		{Value: 90, ActiveColor: lipgloss.Color("#00FF00"), DeadColor: lipgloss.Color("#FF0000")},
-		{Value: 110},
-		{Value: 150},
-		{Value: 184, ActiveChar: '🚗'},
-	}
-)
-
-// Rule represents a cellular automaton rule
-type Rule struct {
-	Value       int
-	ActiveChar  rune
-	DeadChar    rune
-	ActiveColor lipgloss.Color
-	DeadColor   lipgloss.Color
-}
-
-// BoundaryType represents the boundary type of the cellular automaton
-type BoundaryType int
-
-// BoundaryType constants
-const (
-	BoundaryPeriodic BoundaryType = iota // Periodic boundary (default)
-	BoundaryFixed                        // Fixed boundary (0 values)
-	BoundaryReflect                      // Reflective boundary (mirror)
-)
-
-// ToString returns the string representation of boundary type
-func (bt BoundaryType) ToString(language ui.Language) string {
-	switch bt {
-	case BoundaryPeriodic:
-		if language == ui.Chinese {
-			return "周期"
-		}
-		return "Periodic"
-	case BoundaryFixed:
-		if language == ui.Chinese {
-			return "固定"
-		}
-		return "Fixed"
-	case BoundaryReflect:
-		if language == ui.Chinese {
-			return "反射"
-		}
-		return "Reflect"
-	}
-	if language == ui.Chinese {
-		return "周期"
-	}
-	return "Periodic"
-}
-
 // CellularAutomaton represents a 1D cellular automaton
 type CellularAutomaton struct {
-	rule       Rule
+	rule        Rule
+	boundary    BoundaryType // Boundary condition type
+	currentRule int
+	ruleList    []Rule
+
 	rows       int
 	cols       int
-	boundary   BoundaryType // Boundary condition type
+	generation int // Track actual generation number for infinite mode
 	currentRow []bool
 	nextRow    []bool
-	generation int     // Track actual generation number for infinite mode
-	ruleTable  [8]bool // Pre-computed rule table for better performance
 	screen     *ui.Screen
+	ruleTable  [8]bool // Pre-computed rule table for better performance
 	buf        []rune
 }
 
 // New creates a new cellular automaton instance
-func New(rule, rows, cols int, boundary BoundaryType) *CellularAutomaton {
-	slog.Debug("NewCellularAutomaton", "rule", rule, "boundary", boundary, "rows", rows, "cols", cols)
+func New(cfg Config) *CellularAutomaton {
+	slog.Debug("NewCellularAutomaton", "cfg", cfg)
+	cfg.Init()
 	ca := &CellularAutomaton{
-		rule:     Rule{Value: rule},
-		rows:     rows,
-		cols:     cols,
-		boundary: boundary,
+		rule:     cfg.GetRule(),
+		rows:     defaultRows,
+		cols:     defaultCols,
+		boundary: cfg.GetBoundary(),
+		ruleList: cfg.GetRuleList(),
+	}
+	// Set currentRule to point to the current rule in ruleList
+	for i, rule := range ca.ruleList {
+		if rule.Value == ca.rule.Value {
+			ca.currentRule = i
+			break
+		}
 	}
 	ca.initial()
 	return ca
@@ -198,31 +140,17 @@ func (ca *CellularAutomaton) Handle(key string) (bool, error) {
 	key = strings.ToLower(key)
 	switch key {
 	case "t":
-		if len(Rules) == 0 {
-			slog.Debug("CellularAutomaton Handle", "key", key, "warning", "no rules")
-			return true, nil
-		}
-		rule := Rules[0]
-		for i, item := range Rules {
-			if item.Value == ca.rule.Value {
-				rule = Rules[(i+1)%len(Rules)]
-				break
-			}
-		}
-		if ca.rule.Value == rule.Value {
-			slog.Debug("CellularAutomaton Handle", "key", key, "rule", rule, "warning", "rule is the same, skip change")
-			return true, nil
-		}
-		ca.rule = rule
-		slog.Debug("CellularAutomaton Handle", "key", key, "rule", rule)
+		ca.currentRule = (ca.currentRule + 1) % len(ca.ruleList)
+		ca.rule = ca.ruleList[ca.currentRule]
+		slog.Debug("CellularAutomaton Rule Changed", "key", key, "rule", ca.rule)
 		ca.initial()
 		return true, nil
 	case "b":
 		ca.boundary = (ca.boundary + 1) % 3
-		slog.Debug("CellularAutomaton Handle", "key", key, "boundary", ca.boundary)
+		slog.Debug("CellularAutomaton Boundary Changed", "key", key, "boundary", ca.boundary)
 		return true, nil
 	}
-	slog.Debug("CellularAutomaton Handle", "key", key, "warning", "key not handled")
+	slog.Debug("CellularAutomaton Unhandled Key", "key", key)
 	return false, nil
 }
 

@@ -28,11 +28,9 @@ func TestNewCellularAutomaton(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ca := New(tt.rule, tt.rows, tt.cols, tt.boundary)
+			ca := New(Config{Rule: tt.rule, Boundary: int(tt.boundary)})
 			assert.NotNil(t, ca)
 			assert.Equal(t, tt.rule, ca.rule.Value)
-			assert.Equal(t, tt.rows, ca.rows)
-			assert.Equal(t, tt.cols, ca.cols)
 			assert.Equal(t, tt.boundary, ca.boundary)
 			assert.Equal(t, 0, ca.generation)
 			assert.NotNil(t, ca.currentRow)
@@ -70,7 +68,7 @@ func TestCellularBoundaryTypeToString(t *testing.T) {
 
 // TestStep tests the step function of cellular automaton
 func TestStep(t *testing.T) {
-	ca := New(30, 10, 20, BoundaryPeriodic)
+	ca := New(Config{Rule: 30, Boundary: int(BoundaryPeriodic)})
 
 	// Test multiple steps
 	for i := 1; i <= 5; i++ {
@@ -252,14 +250,15 @@ func TestComputeRuleTable(t *testing.T) {
 func TestHandle(t *testing.T) {
 	// Initialize Rules for testing
 	originalRules := Rules
-	Rules = []Rule{
-		{Value: 30},
-		{Value: 90},
-		{Value: 110},
+	testRules := map[int]Rule{
+		30:  {Value: 30},
+		90:  {Value: 90},
+		110: {Value: 110},
 	}
+	Rules = testRules
 	defer func() { Rules = originalRules }()
 
-	ca := New(30, 10, 20, BoundaryPeriodic)
+	ca := New(Config{Rule: 30, Boundary: int(BoundaryPeriodic)})
 
 	tests := []struct {
 		name             string
@@ -286,7 +285,7 @@ func TestHandle(t *testing.T) {
 
 // TestReset tests the reset functionality
 func TestReset(t *testing.T) {
-	ca := New(30, 10, 20, BoundaryPeriodic)
+	ca := New(Config{Rule: 30, Boundary: int(BoundaryPeriodic)})
 
 	// Run a few steps
 	for i := 0; i < 5; i++ {
@@ -296,8 +295,6 @@ func TestReset(t *testing.T) {
 	// Reset with new dimensions
 	err := ca.Reset(15, 25)
 	assert.NoError(t, err)
-	assert.Equal(t, 15, ca.rows)
-	assert.Equal(t, 25, ca.cols)
 	assert.Equal(t, 0, ca.generation)
 	assert.Equal(t, 25, len(ca.currentRow))
 	assert.Equal(t, 25, len(ca.nextRow))
@@ -306,7 +303,7 @@ func TestReset(t *testing.T) {
 
 // TestHeaderAndStatus tests UI text generation
 func TestHeaderAndStatus(t *testing.T) {
-	ca := New(30, 10, 20, BoundaryPeriodic)
+	ca := New(Config{Rule: 30, Boundary: int(BoundaryPeriodic)})
 
 	// Test English
 	assert.Equal(t, HeaderEN, ca.Header(ui.English))
@@ -329,7 +326,7 @@ func TestHeaderAndStatus(t *testing.T) {
 
 // TestHandleKeys tests the handle keys generation
 func TestHandleKeys(t *testing.T) {
-	ca := New(30, 10, 20, BoundaryPeriodic)
+	ca := New(Config{Rule: 30, Boundary: int(BoundaryPeriodic)})
 
 	// Test English
 	keys := ca.HandleKeys(ui.English)
@@ -350,7 +347,7 @@ func TestHandleKeys(t *testing.T) {
 
 // TestIsFinishedAndStop tests completion and stop methods
 func TestIsFinishedAndStop(t *testing.T) {
-	ca := New(30, 10, 20, BoundaryPeriodic)
+	ca := New(Config{Rule: 30, Boundary: int(BoundaryPeriodic)})
 
 	// Cellular automaton never finishes
 	assert.False(t, ca.IsFinished())
@@ -410,7 +407,7 @@ func BenchmarkStep(b *testing.B) {
 	for _, size := range sizes {
 		for _, rule := range rules {
 			b.Run(size.name+"-Rule"+strconv.Itoa(rule), func(b *testing.B) {
-				ca := New(rule, 10, size.cols, BoundaryPeriodic)
+				ca := New(Config{Rule: rule, Boundary: int(BoundaryPeriodic)})
 				b.ResetTimer()
 				for i := 0; i < b.N; i++ {
 					ca.Step()
@@ -518,7 +515,7 @@ func BenchmarkInitial(b *testing.B) {
 
 // BenchmarkHandleDifferentKeys benchmarks keyboard input handling
 func BenchmarkHandleDifferentKeys(b *testing.B) {
-	ca := New(30, 10, 100, BoundaryPeriodic)
+	ca := New(Config{Rule: 30, Boundary: int(BoundaryPeriodic)})
 	keys := []string{"t", "b", "x", "T", "B"}
 
 	b.ResetTimer()
